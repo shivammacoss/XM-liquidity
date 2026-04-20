@@ -1,0 +1,140 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'server/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'server/**'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: self-hosted
+
+    steps:
+      - name: Deploy Backend (Staging)
+        run: |
+          cd ~/SwisTrade/server
+          
+          # Preserve .env file
+          if [ -f .env ]; then
+            cp .env /tmp/.env.staging.backup
+            echo "✓ .env backed up"
+          fi
+          
+          # Pull latest code
+          git fetch origin develop
+          git reset --hard origin/develop
+          
+          # Restore .env file
+          if [ -f /tmp/.env.staging.backup ]; then
+            cp /tmp/.env.staging.backup .env
+            rm /tmp/.env.staging.backup
+            echo "✓ .env restored"
+          fi
+          
+          # Activate venv and install dependencies
+          source venv/bin/activate
+          pip install -r requirements.txt
+          
+          # Restart service
+          sudo systemctl restart swistrade-api
+          
+          echo "✓ Staging backend deployed!"
+
+  deploy-production:
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: self-hosted
+    environment: production
+
+    steps:
+      - name: Deploy Backend (Production)
+        run: |
+          cd ~/SwisTrade/server
+          
+          # Preserve .env file
+          if [ -f .env ]; then
+            cp .env /tmp/.env.prod.backup
+            echo "✓ .env backed up"
+          fi
+          
+          # Create backup of current app code
+          BACKUP_DIR="app_backup_$(date +%Y%m%d_%H%M%S)"
+          cp -r app $BACKUP_DIR
+          echo "✓ Code backup: $BACKUP_DIR"
+          
+          # Pull latest code
+          git fetch origin main
+          git reset --hard origin/main
+          
+          # Restore .env file
+          if [ -f /tmp/.env.prod.backup ]; then
+            cp /tmp/.env.prod.backup .env
+            rm /tmp/.env.prod.backup
+            echo "✓ .env restored"
+          fi
+          
+          # Activate venv and install dependencies
+          source venv/bin/activate
+          pip install -r requirements.txt
+          
+          # Restart service
+          sudo systemctl restart swistrade-api
+          
+          # Health check
+          sleep 5
+          if curl -s http://localhost:8000/health | grep -q "ok"; then
+            echo "✓ Health check passed!"
+          else
+            echo "✗ Health check failed! Rolling back..."
+            rm -rf app
+            cp -r $BACKUP_DIR app
+            sudo systemctl restart swistrade-api
+            exit 1
+          fi
+          
+          echo "✓ Production backend deployed!"
+
+  rollback:
+    name: Rollback Production
+    runs-on: self-hosted
+    if: github.event_name == 'workflow_dispatch'
+    environment: production
+
+    steps:
+      - name: Rollback to previous version
+        run: |
+          cd ~/SwisTrade/server
+          
+          # Find latest backup
+          LATEST_BACKUP=$(ls -td app_backup_* 2>/dev/null | head -1)
+          
+          if [ -z "$LATEST_BACKUP" ]; then
+            echo "No backup found!"
+            exit 1
+          fi
+          
+          # Preserve current .env
+          cp .env /tmp/.env.rollback.backup
+          
+          # Restore from backup
+          rm -rf app
+          cp -r $LATEST_BACKUP app
+          
+          # Restore .env
+          cp /tmp/.env.rollback.backup .env
+          
+          # Restart service
+          sudo systemctl restart swistrade-api
+          
+          echo "✓ Rolled back to: $LATEST_BACKUP"

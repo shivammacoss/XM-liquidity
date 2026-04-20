@@ -2,7 +2,7 @@
 SwisTrade — FastAPI Application Entry Point
 All security middleware configured here. Database never exposed to frontend.
 """
-
+# --- Backend testing By Hari ---# 
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status

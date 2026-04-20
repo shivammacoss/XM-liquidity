@@ -27,7 +27,7 @@ export default function Header() {
         </nav>
         <div className="header__actions">
           <Link to="/signin" className="header__signin">SIGN IN</Link>
-          <Link to="/signup" className="laser-btn laser-btn--sm">GET</Link>
+          <Link to="/signup" className="laser-btn laser-btn--sm">GET STARTED</Link>
         </div>
       </div>
     </header>

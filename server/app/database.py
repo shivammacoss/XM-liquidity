@@ -4,6 +4,8 @@ Secure MongoDB connection via Motor (async) + Beanie ODM.
 Connection string is NEVER exposed to frontend or logs.
 """
 
+import ssl
+import certifi
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from app.config import settings
@@ -34,12 +36,16 @@ async def init_db():
     """Initialize MongoDB connection and Beanie ODM with all models."""
     global _client
 
-    _client = AsyncIOMotorClient(
-        settings.mongodb_url,
-        maxPoolSize=50,
-        minPoolSize=10,
-        serverSelectionTimeoutMS=5000,
-    )
+    # Use TLS only for Atlas (mongodb+srv), not for local MongoDB
+    client_options = {
+        "maxPoolSize": 50,
+        "minPoolSize": 10,
+        "serverSelectionTimeoutMS": 5000,
+    }
+    if settings.mongodb_url.startswith("mongodb+srv"):
+        client_options["tlsCAFile"] = certifi.where()
+    
+    _client = AsyncIOMotorClient(settings.mongodb_url, **client_options)
 
     await init_beanie(
         database=_client[settings.mongodb_db_name],

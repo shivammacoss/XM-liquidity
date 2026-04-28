@@ -41,6 +41,11 @@ class Bot(Document):
     use_sl: bool = True
     use_tp: bool = True
 
+    # TradingView price alerts often omit strategy order — fill direction here ("buy" / "sell")
+    default_order_action: str = ""
+    # When alert JSON has no ticker (or webhook strips it), trade this symbol e.g. XAUUSD
+    fixed_symbol: str = ""
+
     # Stats
     total_signals: int = 0
     total_trades_executed: int = 0

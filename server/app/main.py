@@ -47,6 +47,23 @@ async def lifespan(app: FastAPI):
     await seed_account_types()
     await seed_default_charges()
 
+    pub = (settings.public_api_base_url or "").strip().lower()
+    if not pub:
+        print(
+            "[WARN] PUBLIC_API_BASE_URL is unset — webhook URLs fall back to localhost; "
+            "TradingView cannot use them. Set your ngrok HTTPS URL in .env."
+        )
+    elif "localhost" in pub or "127.0.0.1" in pub:
+        print(
+            "[WARN] PUBLIC_API_BASE_URL points to localhost — TradingView cannot POST webhooks there. "
+            "Use ngrok (HTTPS) or a deployed URL. See .env.example."
+        )
+    elif pub.startswith("http://") and ":8000" in pub:
+        print(
+            "[WARN] PUBLIC_API_BASE_URL uses http:// on port 8000 — TradingView rejects this "
+            '("Only port 80 is allowed for HTTP"). Use HTTPS (e.g. ngrok https URL).'
+        )
+
     yield
 
     # --- SHUTDOWN ---

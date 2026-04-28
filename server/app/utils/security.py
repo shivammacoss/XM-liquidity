@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 
 from jose import JWTError, jwt
+from passlib import exc as passlib_exc
 from passlib.context import CryptContext
 
 from app.config import settings
@@ -27,7 +28,13 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash. Constant-time comparison."""
-    return pwd_context.verify(plain_password, hashed_password)
+    if not hashed_password or not isinstance(hashed_password, str):
+        return False
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except (ValueError, TypeError, passlib_exc.UnknownHashError):
+        # Malformed / non-bcrypt hashes must not become 500s; treat as no match.
+        return False
 
 
 def create_access_token(

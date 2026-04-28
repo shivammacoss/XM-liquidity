@@ -73,8 +73,18 @@ export const copyApi = {
 // --- Bots ---
 export const botsApi = {
   list: () => api.get('/bots/'),
-  create: (data: { account_id: string; name: string; strategy_name?: string; default_lot_size: number }) =>
-    api.post('/bots/', data),
+  create: (data: {
+    account_id: string;
+    name: string;
+    strategy_name?: string;
+    default_lot_size: number;
+    max_lot_size?: number;
+    risk_per_trade_pct?: number;
+    use_sl?: boolean;
+    use_tp?: boolean;
+    default_order_action?: string;
+    fixed_symbol?: string;
+  }) => api.post('/bots/', data),
   signals: (botId: string, params?: Record<string, string | number>) =>
     api.get(`/bots/${botId}/signals`, { params }),
   toggle: (botId: string) => api.patch(`/bots/${botId}/toggle`),

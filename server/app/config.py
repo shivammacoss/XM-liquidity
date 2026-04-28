@@ -50,6 +50,10 @@ class Settings(BaseSettings):
     super_admin_email: str = "admin@protrader.com"
     super_admin_password: str = ""
 
+    # --- Public URLs (webhook links shown to users; must hit this API from the internet) ---
+    # Example: https://api.yourdomain.com  or  http://localhost:8000  for local testing with tunnels
+    public_api_base_url: str = ""
+
     @property
     def cors_origins(self) -> List[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",")]

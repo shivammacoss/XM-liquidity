@@ -20,6 +20,11 @@ from app.utils.security import (
     create_refresh_token,
 )
 
+# Valid bcrypt hash (password is never revealed) — used when email not found so verify runs real work.
+_PASSWORD_TIMING_DUMMY_HASH = (
+    "$2b$12$UaswAWioBmx6FVGML5LxyeXTGlagm9J.xzn3SZuA2YW0dCzaeTmI2"
+)
+
 
 async def register_user(data: RegisterRequest) -> User:
     """
@@ -54,7 +59,7 @@ async def authenticate_user(email: str, password: str) -> User:
 
     if not user:
         # Still run hash comparison to prevent timing-based user enumeration
-        verify_password(password, "$2b$12$invalid_hash_placeholder_value")
+        verify_password(password, _PASSWORD_TIMING_DUMMY_HASH)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -132,21 +137,30 @@ async def invalidate_all_sessions(user_id: PydanticObjectId):
     ).update({"$set": {"is_active": False}})
 
 
+def _enum_or_str(value, default: str) -> str:
+    """Beanie may load enums as raw strings from older MongoDB documents."""
+    if value is None:
+        return default
+    return value.value if hasattr(value, "value") else str(value)
+
+
 def user_to_public(user: User) -> UserPublic:
     """Convert User document to safe public response. Never exposes password_hash."""
+    created = user.created_at
+    created_str = created.isoformat() if created else datetime.now(timezone.utc).isoformat()
     return UserPublic(
         id=str(user.id),
         email=user.email,
         name=user.name,
         phone=user.phone,
-        role=user.role.value,
-        kyc_status=user.kyc_status.value,
+        role=_enum_or_str(user.role, "user"),
+        kyc_status=_enum_or_str(user.kyc_status, "not_submitted"),
         profile_image=user.profile_image,
         avatar_type=user.avatar_type,
         is_active=user.is_active,
         is_blocked=user.is_blocked,
         is_trading_restricted=user.is_trading_restricted,
-        created_at=user.created_at.isoformat(),
+        created_at=created_str,
     )
 
 

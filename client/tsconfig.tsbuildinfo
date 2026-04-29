@@ -1,0 +1,1 @@
+{"root":["./src/vite-env.d.ts","./src/hooks/useauth.ts","./src/services/admin.ts","./src/services/api.ts","./src/services/dashboard.ts","./src/store/authslice.ts","./src/store/index.ts","./src/types/auth.ts"],"version":"6.0.2"}

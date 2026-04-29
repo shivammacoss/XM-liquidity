@@ -90,19 +90,34 @@ jobs:
           
           # Restart service
           sudo systemctl restart swistrade-api
-          
-          # Health check
-          sleep 5
-          if curl -s http://localhost:8000/health | grep -q "ok"; then
-            echo "✓ Health check passed!"
-          else
-            echo "✗ Health check failed! Rolling back..."
+
+          # Health check — retry up to 60s while the FastAPI app boots
+          # (MongoDB connect + Beanie init + seeders need more than 5s on a cold restart).
+          HEALTH_OK=0
+          for i in $(seq 1 30); do
+            BODY=$(curl -fsS --max-time 3 http://localhost:8000/health 2>/dev/null || true)
+            if echo "$BODY" | grep -q '"status":"ok"'; then
+              HEALTH_OK=1
+              echo "✓ Health check passed on attempt $i"
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$HEALTH_OK" -ne 1 ]; then
+            echo "✗ Health check failed after 60s. Recent service logs:"
+            sudo journalctl -u swistrade-api -n 80 --no-pager || true
+
+            echo "Rolling back to $BACKUP_DIR..."
             rm -rf app
             cp -r $BACKUP_DIR app
             sudo systemctl restart swistrade-api
             exit 1
           fi
-          
+
+          # Prune old backups, keep last 5
+          ls -1dt app_backup_* 2>/dev/null | tail -n +6 | xargs -r rm -rf
+
           echo "✓ Production backend deployed!"
 
   rollback:

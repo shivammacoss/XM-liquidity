@@ -19,7 +19,7 @@ from app.models.transaction import Transaction
 from app.models.trade import Trade
 from app.models.instrument import Instrument
 from app.models.charge import ChargeSettings
-from app.models.prop import PropAccount, PropSettings
+from app.models.prop import PropAccount, PropSettings, PropChallenge
 from app.models.ib import IBAccount, IBTree, IBCommission, IBLevelSettings
 from app.models.copy_trading import CopyMaster, CopySubscription, CopySignal, PAMMAccount
 from app.models.bot import Bot, BotSignal
@@ -59,7 +59,7 @@ async def init_db():
             # Charges
             ChargeSettings,
             # Prop
-            PropAccount, PropSettings,
+            PropAccount, PropSettings, PropChallenge,
             # Business
             IBAccount, IBTree, IBCommission, IBLevelSettings,
             # Social
@@ -124,6 +124,14 @@ async def _ensure_indexes():
 
     # Prop indexes
     await PropAccount.get_motor_collection().create_index("user_id", background=True)
+    await PropAccount.get_motor_collection().create_index("status", background=True)
+    await PropAccount.get_motor_collection().create_index(
+        [("user_id", 1), ("status", 1)], background=True
+    )
+    await PropChallenge.get_motor_collection().create_index(
+        [("admin_id", 1), ("is_active", 1), ("sort_order", 1)], background=True
+    )
+    await PropSettings.get_motor_collection().create_index("admin_id", background=True)
 
     # Bot indexes
     await Bot.get_motor_collection().create_index("user_id", background=True)

@@ -21,6 +21,7 @@
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
 }
 
 body {
@@ -39,4 +40,22 @@ a {
 
 input, textarea, select, button {
   font-family: inherit;
+}
+
+select {
+  background-color: #0a0a0a;
+  color: var(--text-primary);
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background-color: #0a0a0a;
+  color: var(--text-primary);
+}
+
+select option:checked,
+select option:hover {
+  background-color: var(--accent);
+  color: #000;
 }

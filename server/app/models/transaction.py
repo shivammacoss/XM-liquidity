@@ -16,6 +16,7 @@ class TransactionType(str, Enum):
     WITHDRAWAL = "withdrawal"
     INTERNAL_TRANSFER = "internal_transfer"      # Wallet → Account or Account → Wallet
     PROP_PURCHASE = "prop_purchase"
+    PROP_PAYOUT = "prop_payout"                   # Funded-challenge profit payout
     COMMISSION = "commission"                     # IB/sub-broker commission credit
     PROFIT_SHARE = "profit_share"                 # PAMM profit distribution
 
@@ -54,8 +55,18 @@ class Transaction(Document):
     from_account_id: Optional[PydanticObjectId] = None  # Trading account or wallet
     to_account_id: Optional[PydanticObjectId] = None
 
-    # For prop purchases
+    # For prop purchases / payouts
     prop_account_id: Optional[PydanticObjectId] = None
+
+    # Free-form payment payload (kind="prop_payout" carries challenge_account_id,
+    # profit, split_pct; kind="bank_wire" carries account number; etc.)
+    payment_details: dict = Field(default_factory=dict)
+
+    # User note attached at request time (e.g. payout description)
+    user_note: Optional[str] = None
+
+    # Rejection reason (separate from admin_notes for clarity)
+    rejection_reason: Optional[str] = None
 
     # Admin review
     admin_notes: Optional[str] = None

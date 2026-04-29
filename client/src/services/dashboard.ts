@@ -43,10 +43,21 @@ export const tradesApi = {
 
 // --- Prop ---
 export const propApi = {
+  // Public + legacy
+  status: () => api.get('/prop/status'),
   available: () => api.get('/prop/available'),
   purchase: (propSettingsId: string) => api.post('/prop/purchase', { prop_settings_id: propSettingsId }),
   myChallenges: (params?: Record<string, string>) => api.get('/prop/my-challenges', { params }),
   getDetail: (id: string) => api.get(`/prop/${id}`),
+
+  // bharat_funded parity — multi-tier catalog + analytics + funded payout
+  challenges: () => api.get('/prop/challenges'),
+  buy: (challengeId: string, tierIndex?: number) =>
+    api.post('/prop/buy', { challenge_id: challengeId, tier_index: tierIndex ?? null }),
+  myAccounts: () => api.get('/prop/my-accounts'),
+  dashboard: (propId: string) => api.get(`/prop/account/${propId}/dashboard`),
+  insights: (propId: string) => api.get(`/prop/account/${propId}/insights`),
+  withdraw: (propId: string) => api.post('/prop/withdraw', { prop_id: propId }),
 };
 
 // --- IB ---

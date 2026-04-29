@@ -159,6 +159,7 @@ from app.routers.admin.dashboard import router as admin_router
 from app.routers.notifications import router as notifications_router
 from app.routers.banking import router as banking_router
 from app.routers.admin.notifications import router as admin_notif_router
+from app.routers.admin.prop import router as admin_prop_router
 from app.routers.market_data import router as market_data_router
 
 api_prefix = f"/api/{settings.api_version}"
@@ -177,6 +178,7 @@ app.include_router(notifications_router, prefix=api_prefix)
 app.include_router(banking_router, prefix=api_prefix)
 app.include_router(admin_router, prefix=api_prefix)
 app.include_router(admin_notif_router, prefix=api_prefix)
+app.include_router(admin_prop_router, prefix=api_prefix)
 app.include_router(market_data_router, prefix=api_prefix)
 
 

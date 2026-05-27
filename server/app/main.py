@@ -1,14 +1,16 @@
 """
-SwisTrade — FastAPI Application Entry Point
+XMLiquidity — FastAPI Application Entry Point
 All security middleware configured here. Database never exposed to frontend.
 """
 # --- Backend testing By Hari ---# 
 from contextlib import asynccontextmanager
 
+import os
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -116,7 +118,7 @@ async def security_headers(request: Request, call_next):
             "max-age=31536000; includeSubDomains"
         )
     # Don't leak server info
-    response.headers["Server"] = "SwisTrade"
+    response.headers["Server"] = "XMLiquidity"
     # Referrer policy
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
@@ -180,6 +182,12 @@ app.include_router(admin_router, prefix=api_prefix)
 app.include_router(admin_notif_router, prefix=api_prefix)
 app.include_router(admin_prop_router, prefix=api_prefix)
 app.include_router(market_data_router, prefix=api_prefix)
+
+
+# --- Static uploads (proofs, KYC, etc.) ---
+# Files written under settings.upload_dir are reachable at /uploads/...
+os.makedirs(settings.upload_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 
 
 # --- Health Check (no auth required) ---

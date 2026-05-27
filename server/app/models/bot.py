@@ -1,5 +1,5 @@
 """
-SwisTrade — Bot / Algo Trading Models
+XMLiquidity — Bot / Algo Trading Models
 Connect TradingView strategy alerts to any account.
 Webhook receives alert → parses → auto-executes trade.
 """

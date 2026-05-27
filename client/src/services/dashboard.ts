@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Dashboard API Service
+ * XMLiquidity — Dashboard API Service
  * All dashboard-related API calls.
  */
 
@@ -18,12 +18,27 @@ export const accountsApi = {
 export const walletApi = {
   get: () => api.get('/wallet/'),
   getMemoTag: () => api.get('/wallet/memo-tag'),
-  deposit: (data: { amount: number; method: string; crypto_txn_hash?: string; memo_tag?: string }) =>
-    api.post('/wallet/deposit', data),
-  withdraw: (data: { amount: number; method: string }) => api.post('/wallet/withdraw', data),
+  depositAddresses: () => api.get('/wallet/deposit-addresses'),
+  deposit: (data: {
+    amount: number;
+    method: string;
+    network?: string;
+    crypto_txn_hash?: string;
+    memo_tag?: string;
+    from_address?: string;
+    proof_image_url?: string;
+  }) => api.post('/wallet/deposit', data),
+  withdraw: (data: { amount: number; method: string; network?: string; wallet_address?: string }) =>
+    api.post('/wallet/withdraw', data),
   transfer: (data: { amount: number; direction: string; account_id: string }) =>
     api.post('/wallet/transfer', data),
   transactions: (params?: Record<string, string | number>) => api.get('/wallet/transactions', { params }),
+  lockFunds: () => api.post('/wallet/lock-funds', {}),
+  uploadProof: (file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api.post('/wallet/upload-proof', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
 };
 
 // --- Trades ---

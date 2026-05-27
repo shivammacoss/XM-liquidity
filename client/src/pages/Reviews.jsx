@@ -9,7 +9,7 @@ const reviews = [
     role: 'Forex Scalper, London',
   },
   {
-    text: '"The 1-hour crypto withdrawal guarantee is a game changer. SwisTrade\'s speed on digital assets is unmatched in the industry."',
+    text: '"The 1-hour crypto withdrawal guarantee is a game changer. XMLiquidity\'s speed on digital assets is unmatched in the industry."',
     initials: 'MV',
     name: 'Marco V.',
     role: 'Crypto Trader, Dubai',
@@ -29,7 +29,7 @@ export default function Reviews() {
         <span className="mono-label">TESTIMONIALS</span>
         <h1 className="section-title">TRUSTED BY TRADERS WORLDWIDE</h1>
         <p className="section-subtitle">
-          See what our community has to say about trading with SwisTrade.
+          See what our community has to say about trading with XMLiquidity.
         </p>
       </section>
 
@@ -56,7 +56,7 @@ export default function Reviews() {
         <div className="final-cta__inner">
           <h2 className="section-title">READY TO TRADE WITH INSTITUTIONAL SPEED?</h2>
           <p className="section-subtitle">
-            Join thousands of traders who trust SwisTrade for lightning-fast execution, ultra-low spreads, and reliable crypto payouts.
+            Join thousands of traders who trust XMLiquidity for lightning-fast execution, ultra-low spreads, and reliable crypto payouts.
           </p>
           <div className="final-cta__actions">
             <a href="#" className="laser-btn">OPEN LIVE ACCOUNT</a>

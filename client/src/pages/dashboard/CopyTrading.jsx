@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Copy Trading + PAMM Page
+ * XMLiquidity — Copy Trading + PAMM Page
  */
 
 import { useState, useEffect } from 'react'

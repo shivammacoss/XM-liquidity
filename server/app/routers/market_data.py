@@ -1,5 +1,5 @@
 """
-SwisTrade — Market Data Proxy
+XMLiquidity — Market Data Proxy
 Proxies InfoWay API calls through our backend to avoid CORS issues.
 Frontend calls our API → we call InfoWay with header auth → return data.
 

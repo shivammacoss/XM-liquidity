@@ -1,13 +1,13 @@
 /* ============================================
-   SWISTRADE ADMIN — Styles
-   Separate app, runs on admin.swistrade.com
+   XMLIQUIDITY ADMIN — Styles
+   Separate app, runs on admin.xmliquidity.com
    ============================================ */
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg: #050505;
-  --accent: #BFFF00;
+  --bg: #000000;
+  --accent: #FFFFFF;
   --admin-accent: #ff5050;
   --text-primary: #FFFFFF;
   --text-secondary: rgba(255, 255, 255, 0.4);
@@ -34,8 +34,8 @@ select option:checked, select option:hover { background-color: var(--accent); co
 .mono-label { font-family: 'Geist Mono', monospace; font-weight: 500; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-secondary); }
 
 /* --- Laser Button --- */
-.laser-btn { display: inline-flex; align-items: center; justify-content: center; background: var(--accent); color: #000; border: none; border-radius: 9999px; font-family: 'Geist Mono', monospace; font-weight: 600; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; padding: 14px 32px; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(191, 255, 0, 0.3); transition: box-shadow 0.4s var(--ease), transform 0.4s var(--ease); }
-.laser-btn:hover { box-shadow: 0 0 40px rgba(191, 255, 0, 0.5); transform: translateY(-1px); }
+.laser-btn { display: inline-flex; align-items: center; justify-content: center; background: var(--accent); color: #000; border: none; border-radius: 9999px; font-family: 'Geist Mono', monospace; font-weight: 600; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; padding: 14px 32px; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); transition: box-shadow 0.4s var(--ease), transform 0.4s var(--ease); }
+.laser-btn:hover { box-shadow: 0 0 40px rgba(255, 255, 255, 0.5); transform: translateY(-1px); }
 .laser-btn--sm { padding: 10px 24px; font-size: 10px; }
 .laser-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
@@ -138,7 +138,7 @@ select option:checked, select option:hover { background-color: var(--accent); co
 .dash-badge { font-family: 'Geist Mono', monospace; font-size: 9px; letter-spacing: 0.15em; padding: 4px 10px; border-radius: 9999px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); }
 .dash-status { font-family: 'Geist Mono', monospace; font-size: 9px; letter-spacing: 0.15em; padding: 4px 10px; border-radius: 9999px; }
 .dash-status--pending { color: #ffaa00; background: rgba(255, 170, 0, 0.1); }
-.dash-status--completed, .dash-status--approved, .dash-status--active, .dash-status--funded { color: var(--accent); background: rgba(191, 255, 0, 0.1); }
+.dash-status--completed, .dash-status--approved, .dash-status--active, .dash-status--funded { color: var(--accent); background: rgba(255, 255, 255, 0.1); }
 .dash-status--rejected, .dash-status--blown, .dash-status--failed, .dash-status--blocked { color: #ff5050; background: rgba(255, 50, 50, 0.1); }
 .dash-status--cancelled { color: var(--text-secondary); background: rgba(255, 255, 255, 0.05); }
 .dash-direction { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; }
@@ -162,7 +162,7 @@ select option:checked, select option:hover { background-color: var(--accent); co
 .dash-loading { text-align: center; padding: 60px 20px; font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: 0.2em; color: var(--text-secondary); }
 .dash-empty { text-align: center; padding: 48px 20px; border: 1px dashed var(--border); border-radius: 1.5rem; }
 .dash-empty p { font-size: 14px; color: var(--text-secondary); }
-.dash-success { background: rgba(191, 255, 0, 0.1); border: 1px solid rgba(191, 255, 0, 0.3); border-radius: 12px; padding: 12px 16px; font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--accent); margin-bottom: 16px; }
+.dash-success { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 12px; padding: 12px 16px; font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--accent); margin-bottom: 16px; }
 
 /* Prop Cards */
 .dash-prop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }

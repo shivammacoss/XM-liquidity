@@ -1,5 +1,5 @@
 """
-SwisTrade — Trading Account Model
+XMLiquidity — Trading Account Model
 6 account types: ECN, Standard, Raw, Elite, Islamic, Cent
 Account opens empty, trading locked until funded.
 """

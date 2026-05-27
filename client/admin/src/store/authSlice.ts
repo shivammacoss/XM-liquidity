@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Auth Redux Slice
+ * XMLiquidity — Auth Redux Slice
  * Manages authentication state. Tokens in memory, not localStorage.
  */
 

@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Admin Transactions Page
+ * XMLiquidity — Admin Transactions Page
  * Approve/reject deposits and withdrawals. THIS IS THE CRITICAL PAGE.
  * Without approving deposits, users can't fund accounts and can't trade.
  */

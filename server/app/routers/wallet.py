@@ -1,19 +1,23 @@
 """
-SwisTrade — Wallet Router
+XMLiquidity — Wallet Router
 Deposits (crypto + bank wire), withdrawals, internal transfers.
 All operations create transaction records for audit.
 """
 
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 import hashlib
 import secrets
+import os
+import uuid
 
+from app.config import settings as app_settings
 from app.middleware.auth import get_current_user
 from app.models.user import User
 from app.models.wallet import Wallet
 from app.models.account import TradingAccount
 from app.models.transaction import Transaction, TransactionType, TransactionMethod, TransactionStatus
+from app.models.platform_settings import get_or_create_settings
 from app.schemas.account import (
     WalletResponse, DepositRequest, WithdrawRequest,
     InternalTransferRequest, TransactionResponse, TransactionListResponse,
@@ -39,6 +43,7 @@ def _txn_to_response(txn: Transaction) -> TransactionResponse:
         memo_tag=txn.memo_tag,
         from_account_id=str(txn.from_account_id) if txn.from_account_id else None,
         to_account_id=str(txn.to_account_id) if txn.to_account_id else None,
+        payment_details=txn.payment_details or {},
         admin_notes=txn.admin_notes,
         created_at=txn.created_at.isoformat(),
     )
@@ -84,6 +89,139 @@ async def get_memo_tag(user: User = Depends(get_current_user)):
     }
 
 
+@router.get("/deposit-addresses")
+async def get_deposit_addresses(user: User = Depends(get_current_user)):
+    """
+    Return the TRC20 + BEP20 platform addresses brokers use to fund their
+    XMLiquidity account. Read from the admin-managed singleton settings.
+    """
+    s = await get_or_create_settings()
+    return {
+        "memo_tag": _generate_memo_tag(str(user.id)),
+        "networks": [
+            {
+                "code": "trc20",
+                "label": s.trc20_label,
+                "address": s.trc20_address,
+                "note": s.trc20_network_note,
+                "qr_url": s.trc20_qr_url,
+            },
+            {
+                "code": "bep20",
+                "label": s.bep20_label,
+                "address": s.bep20_address,
+                "note": s.bep20_network_note,
+                "qr_url": s.bep20_qr_url,
+            },
+        ],
+    }
+
+
+LOCKED_CAPITAL_FIXED = 5000.0
+
+
+@router.post("/lock-funds")
+async def lock_funds_from_wallet(user: User = Depends(get_current_user)):
+    """
+    Top up the broker's trading account from the wallet until it reaches the
+    fixed $5,000 locked-capital floor. Used when a broker has wallet balance
+    sitting around (e.g. from a deposit approved before auto-lock existed)
+    and wants to enable trading.
+    """
+    wallet = await _get_or_create_wallet(user)
+
+    # Match Accounts page ordering — newest first.
+    accounts_list = await TradingAccount.find(
+        TradingAccount.user_id == user.id,
+        TradingAccount.is_prop_account == False,
+    ).sort("-created_at").to_list()
+    account = accounts_list[0] if accounts_list else None
+    if not account:
+        raise HTTPException(status_code=404, detail="No trading account provisioned")
+
+    current_locked = float(account.balance or 0.0)
+    lock_needed = max(0.0, LOCKED_CAPITAL_FIXED - current_locked)
+    if lock_needed <= 0:
+        return {
+            "message": "Locked capital is already at the $5,000 floor.",
+            "moved": 0.0,
+            "account_balance": account.balance,
+            "wallet_balance": wallet.balance,
+        }
+
+    moved = min(lock_needed, float(wallet.balance or 0.0))
+    if moved <= 0:
+        raise HTTPException(status_code=400, detail="Wallet has no balance to lock")
+
+    wallet.balance -= moved
+    wallet.total_transferred += moved
+    wallet.updated_at = datetime.now(timezone.utc)
+
+    account.balance += moved
+    account.equity += moved
+    account.free_margin += moved
+    if not account.is_funded:
+        account.is_funded = True
+    account.initial_deposit = min(
+        LOCKED_CAPITAL_FIXED,
+        max(float(account.initial_deposit or 0.0), account.balance),
+    )
+    account.updated_at = datetime.now(timezone.utc)
+
+    await wallet.save()
+    await account.save()
+
+    txn = Transaction(
+        user_id=user.id,
+        type=TransactionType.INTERNAL_TRANSFER,
+        method=TransactionMethod.INTERNAL,
+        status=TransactionStatus.COMPLETED,
+        amount=moved,
+        from_account_id=wallet.id,
+        to_account_id=account.id,
+        payment_details={"reason": "lock_capital_top_up"},
+    )
+    await txn.insert()
+
+    return {
+        "message": f"Moved ${moved:.2f} from wallet to locked capital.",
+        "moved": moved,
+        "account_balance": account.balance,
+        "wallet_balance": wallet.balance,
+    }
+
+
+@router.post("/upload-proof")
+async def upload_proof_screenshot(
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+):
+    """
+    Upload a payment proof screenshot. Returns a URL the deposit handler
+    can persist on the transaction's payment_details.
+    """
+    allowed_ext = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in allowed_ext:
+        raise HTTPException(status_code=400, detail=f"Unsupported file type {ext}. Allowed: {sorted(allowed_ext)}")
+
+    max_size = app_settings.max_upload_size_mb * 1024 * 1024
+    contents = await file.read()
+    if len(contents) > max_size:
+        raise HTTPException(status_code=400, detail=f"File too large. Max {app_settings.max_upload_size_mb}MB")
+
+    out_dir = os.path.join(app_settings.upload_dir, "deposit_proofs", str(user.id))
+    os.makedirs(out_dir, exist_ok=True)
+    fname = f"{uuid.uuid4().hex}{ext}"
+    out_path = os.path.join(out_dir, fname)
+    with open(out_path, "wb") as f:
+        f.write(contents)
+
+    # Public URL the frontend uses to display the proof later
+    url = f"/uploads/deposit_proofs/{user.id}/{fname}"
+    return {"url": url, "size": len(contents), "filename": fname}
+
+
 @router.post("/deposit", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
 async def request_deposit(
     data: DepositRequest,
@@ -103,6 +241,12 @@ async def request_deposit(
         "bank_wire": TransactionMethod.BANK_WIRE,
     }
 
+    payment_details = {}
+    if data.network:
+        payment_details["network"] = data.network
+    if data.proof_image_url:
+        payment_details["proof_image_url"] = data.proof_image_url
+
     txn = Transaction(
         user_id=user.id,
         type=TransactionType.DEPOSIT,
@@ -112,6 +256,7 @@ async def request_deposit(
         crypto_txn_hash=data.crypto_txn_hash,
         memo_tag=data.memo_tag or _generate_memo_tag(str(user.id)),
         from_address=data.from_address,
+        payment_details=payment_details,
     )
     await txn.insert()
 
@@ -160,12 +305,19 @@ async def request_withdrawal(
     wallet.updated_at = datetime.now(timezone.utc)
     await wallet.save()
 
+    payment_details = {}
+    if data.network:
+        payment_details["network"] = data.network
+    if data.wallet_address:
+        payment_details["to_address"] = data.wallet_address
+
     txn = Transaction(
         user_id=user.id,
         type=TransactionType.WITHDRAWAL,
         method=method_map[data.method],
         status=TransactionStatus.PENDING,
         amount=data.amount,
+        payment_details=payment_details,
     )
     await txn.insert()
 

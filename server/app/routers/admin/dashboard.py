@@ -1,10 +1,10 @@
 """
-SwisTrade — Admin Dashboard + User Management + Trade Management + Risk + Charges + Settings
+XMLiquidity — Admin Dashboard + User Management + Trade Management + Risk + Charges + Settings
 All admin endpoints behind role verification.
 """
 
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
@@ -399,6 +399,10 @@ async def admin_list_transactions(
                 "amount": t.amount,
                 "crypto_txn_hash": t.crypto_txn_hash,
                 "memo_tag": t.memo_tag,
+                "from_address": t.from_address,
+                "payment_details": t.payment_details or {},
+                "admin_notes": t.admin_notes,
+                "rejection_reason": t.rejection_reason,
                 "created_at": t.created_at.isoformat(),
             }
             for t in txns
@@ -426,11 +430,51 @@ async def admin_review_transaction(
 
     wallet = await Wallet.find_one(Wallet.user_id == txn.user_id)
 
+    # Fixed locked-capital floor: the first $5,000 of every deposit is
+    # automatically routed into the broker's trading account so it counts
+    # toward their protected minimum. Anything above $5k flows into the
+    # wallet as spendable balance.
+    LOCKED_CAPITAL_FIXED = 5000.0
+
     if data.action == "approve":
         txn.status = TransactionStatus.COMPLETED
         if txn.type.value == "deposit" and wallet:
-            wallet.balance += txn.amount
-            wallet.total_deposited += txn.amount
+            from app.models.account import TradingAccount
+            # Match the order the broker's Accounts page uses
+            # (accounts/list sorts by -created_at, so accounts[0] = newest).
+            accounts_list = await TradingAccount.find(
+                TradingAccount.user_id == txn.user_id,
+                TradingAccount.is_prop_account == False,
+            ).sort("-created_at").to_list()
+            main_account = accounts_list[0] if accounts_list else None
+
+            deposit_amt = float(txn.amount)
+            to_account = 0.0
+            to_wallet = deposit_amt
+
+            if main_account:
+                current_locked = float(main_account.balance or 0.0)
+                lock_needed = max(0.0, LOCKED_CAPITAL_FIXED - current_locked)
+                to_account = min(deposit_amt, lock_needed)
+                to_wallet = deposit_amt - to_account
+
+                if to_account > 0:
+                    main_account.balance += to_account
+                    main_account.equity += to_account
+                    main_account.free_margin += to_account
+                    if not main_account.is_funded:
+                        main_account.is_funded = True
+                    # initial_deposit tracks the locked baseline (capped at $5k)
+                    main_account.initial_deposit = min(
+                        LOCKED_CAPITAL_FIXED,
+                        max(float(main_account.initial_deposit or 0.0), main_account.balance),
+                    )
+                    main_account.updated_at = datetime.now(timezone.utc)
+                    await main_account.save()
+
+            if to_wallet > 0:
+                wallet.balance += to_wallet
+            wallet.total_deposited += deposit_amt
             wallet.updated_at = datetime.now(timezone.utc)
             await wallet.save()
         elif txn.type.value == "withdrawal":
@@ -843,3 +887,143 @@ async def get_audit_log(page: int = Query(1, ge=1), per_page: int = Query(50, ge
         "total": total,
         "page": page,
     }
+
+
+# ==========================================
+# PLATFORM PAYMENT SETTINGS
+# Where brokers send deposits — admin sets, users view.
+# ==========================================
+
+from app.models.platform_settings import PlatformPaymentSettings, get_or_create_settings
+
+
+class PaymentSettingsRequest(BaseModel):
+    trc20_address: str = ""
+    trc20_label: Optional[str] = None
+    trc20_network_note: Optional[str] = None
+    trc20_qr_url: Optional[str] = None    # "" clears the custom QR; None keeps existing
+    bep20_address: str = ""
+    bep20_label: Optional[str] = None
+    bep20_network_note: Optional[str] = None
+    bep20_qr_url: Optional[str] = None
+
+
+def _settings_to_response(s: PlatformPaymentSettings) -> dict:
+    return {
+        "id": str(s.id),
+        "trc20_address": s.trc20_address,
+        "trc20_label": s.trc20_label,
+        "trc20_network_note": s.trc20_network_note,
+        "trc20_qr_url": s.trc20_qr_url,
+        "bep20_address": s.bep20_address,
+        "bep20_label": s.bep20_label,
+        "bep20_network_note": s.bep20_network_note,
+        "bep20_qr_url": s.bep20_qr_url,
+        "updated_at": s.updated_at.isoformat(),
+    }
+
+
+@router.get("/payment-settings", dependencies=[Depends(get_admin_user)])
+async def admin_get_payment_settings():
+    """Read the platform deposit addresses (TRC20 + BEP20)."""
+    s = await get_or_create_settings()
+    return _settings_to_response(s)
+
+
+@router.put("/payment-settings")
+async def admin_update_payment_settings(
+    data: PaymentSettingsRequest,
+    admin: User = Depends(get_super_admin),
+):
+    """Replace the platform deposit addresses. Super admin only."""
+    s = await get_or_create_settings()
+    old_trc20 = s.trc20_address
+    old_bep20 = s.bep20_address
+    s.trc20_address = data.trc20_address
+    s.bep20_address = data.bep20_address
+    if data.trc20_label is not None:
+        s.trc20_label = data.trc20_label
+    if data.trc20_network_note is not None:
+        s.trc20_network_note = data.trc20_network_note
+    if data.trc20_qr_url is not None:
+        s.trc20_qr_url = data.trc20_qr_url
+    if data.bep20_label is not None:
+        s.bep20_label = data.bep20_label
+    if data.bep20_network_note is not None:
+        s.bep20_network_note = data.bep20_network_note
+    if data.bep20_qr_url is not None:
+        s.bep20_qr_url = data.bep20_qr_url
+    s.updated_by = admin.id
+    s.updated_at = datetime.now(timezone.utc)
+    await s.save()
+
+    log = AdminAuditLog(
+        admin_id=admin.id,
+        action_type="update_payment_settings",
+        entity_type="platform_payment_settings",
+        entity_id=str(s.id),
+        changes=[
+            {"field": "trc20_address", "old_value": old_trc20, "new_value": s.trc20_address},
+            {"field": "bep20_address", "old_value": old_bep20, "new_value": s.bep20_address},
+        ],
+    )
+    await log.insert()
+
+    return _settings_to_response(s)
+
+
+@router.post("/payment-settings/upload-qr")
+async def admin_upload_qr(
+    network: str,
+    file: UploadFile = File(...),
+    admin: User = Depends(get_super_admin),
+):
+    """
+    Upload a custom QR-code image for either the TRC20 or BEP20 deposit
+    address. Replaces any previously-uploaded image. Returns the new public
+    URL the broker will see on Wallet → Deposit.
+    """
+    if network not in ("trc20", "bep20"):
+        raise HTTPException(status_code=400, detail="network must be 'trc20' or 'bep20'")
+
+    allowed_ext = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+    import os, uuid
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in allowed_ext:
+        raise HTTPException(status_code=400, detail=f"Unsupported file type {ext}")
+
+    from app.config import settings as app_settings
+    max_size = app_settings.max_upload_size_mb * 1024 * 1024
+    contents = await file.read()
+    if len(contents) > max_size:
+        raise HTTPException(status_code=400, detail=f"File too large. Max {app_settings.max_upload_size_mb}MB")
+
+    out_dir = os.path.join(app_settings.upload_dir, "platform_qr")
+    os.makedirs(out_dir, exist_ok=True)
+    fname = f"{network}_{uuid.uuid4().hex}{ext}"
+    out_path = os.path.join(out_dir, fname)
+    with open(out_path, "wb") as f:
+        f.write(contents)
+
+    url = f"/uploads/platform_qr/{fname}"
+
+    # Persist on the singleton
+    s = await get_or_create_settings()
+    if network == "trc20":
+        s.trc20_qr_url = url
+    else:
+        s.bep20_qr_url = url
+    s.updated_by = admin.id
+    s.updated_at = datetime.now(timezone.utc)
+    await s.save()
+
+    log = AdminAuditLog(
+        admin_id=admin.id,
+        action_type="upload_payment_qr",
+        entity_type="platform_payment_settings",
+        entity_id=str(s.id),
+        changes=[{"field": f"{network}_qr_url", "old_value": "", "new_value": url}],
+    )
+    await log.insert()
+
+    return {"url": url, "network": network}

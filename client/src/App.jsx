@@ -8,6 +8,7 @@ import './App.css'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import MobileNav from './components/MobileNav'
+import CanvasBackground from './components/CanvasBackground'
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardLayout from './components/layout/DashboardLayout'
 import AdminNotificationBell from './components/admin/AdminNotificationBell'
@@ -38,6 +39,8 @@ import Challenges from './pages/dashboard/Challenges'
 import Business from './pages/dashboard/Business'
 import Profile from './pages/dashboard/Profile'
 import AccountLogs from './pages/dashboard/AccountLogs'
+import ApiAccess from './pages/dashboard/ApiAccess'
+import LiquidityAccountView from './pages/dashboard/LiquidityAccountView'
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -87,9 +90,8 @@ function SessionRestore({ children }) {
 function MarketingLayout() {
   return (
     <>
+      <CanvasBackground />
       <div className="noise-overlay" />
-      <div className="refraction-glow refraction-glow--hero" />
-      <div className="refraction-glow refraction-glow--mid" />
       <ScrollToTop />
       <Header />
       <main style={{ position: 'relative', zIndex: 1 }}>
@@ -162,7 +164,7 @@ function AdminLogin() {
     <div className="admin-login">
       <div className="admin-login__card">
         <div className="admin-login__logo">
-          SWIS<span className="admin-login__logo-accent">TRADE</span>
+          XM<span className="admin-login__logo-accent">LIQUIDITY</span>
           <span className="admin-login__badge">ADMIN</span>
         </div>
         <h1 className="admin-login__title">ADMIN PANEL</h1>
@@ -171,7 +173,7 @@ function AdminLogin() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-form__group">
             <label className="auth-form__label">EMAIL</label>
-            <input name="email" type="email" className="auth-form__input" placeholder="admin@swistrade.com" required autoComplete="email" />
+            <input name="email" type="email" className="auth-form__input" placeholder="admin@xmliquidity.com" required autoComplete="email" />
           </div>
           <div className="auth-form__group">
             <label className="auth-form__label">PASSWORD</label>
@@ -247,7 +249,7 @@ function AdminLayout() {
             {collapsed ? (
               <img src="/favicon.svg" alt="ST" width="28" height="28" style={{ borderRadius: 6 }} />
             ) : (
-              <>SWIS<span className="dash__logo-accent">TRADE</span><span className="dash__admin-badge">ADMIN</span></>
+              <>XM<span className="dash__logo-accent">LIQUIDITY</span><span className="dash__admin-badge">ADMIN</span></>
             )}
           </span>
           <button className="dash__collapse-btn" onClick={() => setCollapsed(!collapsed)}>
@@ -328,9 +330,11 @@ function AppRoutes() {
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<DashboardHome />} />
               <Route path="/dashboard/accounts" element={<Accounts />} />
+              <Route path="/dashboard/liquidity/:accountId" element={<LiquidityAccountView />} />
               <Route path="/dashboard/orders" element={<Orders />} />
               <Route path="/dashboard/account-logs" element={<AccountLogs />} />
               <Route path="/dashboard/wallet" element={<WalletPage />} />
+              <Route path="/dashboard/api-access" element={<ApiAccess />} />
               <Route path="/dashboard/prop" element={<PropChallenges />} />
               <Route path="/dashboard/copy-trading" element={<CopyTrading />} />
               <Route path="/dashboard/bots" element={<AlgoBots />} />
@@ -351,7 +355,7 @@ function AppRoutes() {
         <Routes>
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route element={<AdminProtected><AdminLayout /></AdminProtected>}>
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/transactions" element={<AdminTransactions />} />
             <Route path="/admin/trades" element={<AdminTrades />} />

@@ -41,7 +41,7 @@ export default function WhiteLabel() {
         <span className="mono-label">ENTERPRISE SOLUTIONS</span>
         <h1 className="section-title">LAUNCH YOUR BRAND IN 72 HOURS</h1>
         <p className="section-subtitle">
-          Build your own branded brokerage with SwisTrade's institutional-grade white-label solution. Full technology stack, liquidity, and 24/7 support included.
+          Build your own branded brokerage with XMLiquidity's institutional-grade white-label solution. Full technology stack, liquidity, and 24/7 support included.
         </p>
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 32 }}>
           <a href="#" className="laser-btn">REQUEST DEMO</a>

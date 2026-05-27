@@ -1,5 +1,5 @@
 """
-SwisTrade — IB Router
+XMLiquidity — IB Router
 Create IB accounts, get dashboard, referral links, commission history.
 """
 
@@ -130,5 +130,5 @@ async def get_referral_link(user: User = Depends(get_current_user)):
 
     return {
         "referral_code": ib.referral_code,
-        "referral_link": f"https://swishtrade.com/signup?ref={ib.referral_code}",
+        "referral_link": f"https://xmliquidity.com/signup?ref={ib.referral_code}",
     }

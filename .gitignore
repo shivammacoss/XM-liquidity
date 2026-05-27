@@ -36,3 +36,14 @@ server/.venv
 
 # Claude
 .claude
+
+# User-uploaded files (deposit proofs, KYC, profile pics, admin QR images)
+server/uploads/
+!server/uploads/.gitkeep
+
+# Vite cache
+.vite/
+client/.vite/
+
+# Test logs
+/tmp/xml_*.log

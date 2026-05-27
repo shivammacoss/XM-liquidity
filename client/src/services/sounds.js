@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Trading Sound Effects
+ * XMLiquidity — Trading Sound Effects
  * Generated via Web Audio API — no external files needed.
  * Clean, professional, bass-rich trading sounds.
  */

@@ -9,7 +9,7 @@ export default function Privacy() {
 
       <div className="legal-page">
         <h2>1. Introduction</h2>
-        <p>SwisTrade ("we," "us," "our," or "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our trading platform.</p>
+        <p>XMLiquidity ("we," "us," "our," or "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our trading platform.</p>
 
         <h2>2. Information We Collect</h2>
         <h3>Personal Information</h3>
@@ -87,8 +87,8 @@ export default function Privacy() {
 
         <h2>9. Contact Us</h2>
         <div className="contact-info">
-          <p><strong style={{ color: 'var(--text-primary)' }}>SwisTrade Privacy Team</strong></p>
-          <p>Email: privacy@swistrade.com</p>
+          <p><strong style={{ color: 'var(--text-primary)' }}>XMLiquidity Privacy Team</strong></p>
+          <p>Email: privacy@xmliquidity.com</p>
           <p>Phone: +1 (908) 228-0305</p>
           <p>Address: Office 9364hn, 3 Fitzroy Place, Glasgow City Centre, UK, G3 7RH</p>
         </div>

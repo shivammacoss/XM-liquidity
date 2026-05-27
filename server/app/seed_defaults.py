@@ -1,5 +1,5 @@
 """
-SwisTrade — Seed Default Settings
+XMLiquidity — Seed Default Settings
 Account type defaults + default charge settings.
 """
 

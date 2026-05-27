@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Orders Page
+ * XMLiquidity — Orders Page
  * Live trades, pending orders, trade history with pagination.
  */
 

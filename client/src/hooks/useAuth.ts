@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Auth Hook
+ * XMLiquidity — Auth Hook
  * Convenience hook for auth state and actions.
  */
 

@@ -1,5 +1,5 @@
 """
-SwisTrade — Account Schemas
+XMLiquidity — Account Schemas
 Request/response validation for trading accounts and wallet.
 """
 
@@ -54,15 +54,18 @@ class WalletResponse(BaseModel):
 class DepositRequest(BaseModel):
     amount: float = Field(..., gt=0, le=1000000)
     method: str = Field(..., pattern="^(crypto_btc|crypto_eth|crypto_usdt|bank_wire)$")
+    network: Optional[str] = Field(None, pattern="^(trc20|bep20)$")
     crypto_txn_hash: Optional[str] = None
     memo_tag: Optional[str] = None
     from_address: Optional[str] = None
+    proof_image_url: Optional[str] = None  # URL of uploaded screenshot
 
 
 class WithdrawRequest(BaseModel):
     amount: float = Field(..., gt=0, le=1000000)
     method: str = Field(..., pattern="^(crypto_btc|crypto_eth|crypto_usdt|bank_wire)$")
-    wallet_address: Optional[str] = None   # For crypto withdrawals
+    network: Optional[str] = Field(None, pattern="^(trc20|bep20)$")
+    wallet_address: Optional[str] = None   # User's destination address (crypto)
 
 
 class InternalTransferRequest(BaseModel):
@@ -82,6 +85,7 @@ class TransactionResponse(BaseModel):
     memo_tag: Optional[str] = None
     from_account_id: Optional[str] = None
     to_account_id: Optional[str] = None
+    payment_details: dict = {}
     admin_notes: Optional[str] = None
     created_at: str
 

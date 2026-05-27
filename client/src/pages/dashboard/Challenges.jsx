@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Challenges & Competitions Page
+ * XMLiquidity — Challenges & Competitions Page
  * Daily/weekly/monthly challenges, leaderboard.
  */
 

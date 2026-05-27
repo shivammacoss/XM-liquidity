@@ -1,5 +1,5 @@
 /**
- * SwisTrade — API Service
+ * XMLiquidity — API Service
  * Centralized HTTP client. All API calls go through here.
  * Tokens stored in memory (accessToken) + secure storage (refreshToken).
  * NEVER stores tokens in localStorage for XSS protection.

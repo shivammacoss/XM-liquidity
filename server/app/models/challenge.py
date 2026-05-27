@@ -1,5 +1,5 @@
 """
-SwisTrade — Challenge & Competition Models
+XMLiquidity — Challenge & Competition Models
 Daily/weekly/monthly challenges with leaderboard.
 Categories: best performer, best lot handler, best holders, best positive traders.
 """

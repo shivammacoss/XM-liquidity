@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Algo Bots Page
+ * XMLiquidity — Algo Bots Page
  * Create bots, get webhook URLs, view signal history.
  */
 

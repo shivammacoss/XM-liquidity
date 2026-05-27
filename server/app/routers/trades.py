@@ -1,5 +1,5 @@
 """
-SwisTrade — Trades Router
+XMLiquidity — Trades Router
 Open, close, partial close, modify SL/TP, cancel pending, history.
 """
 

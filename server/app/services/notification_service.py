@@ -1,5 +1,5 @@
 """
-SwisTrade — Notification Service
+XMLiquidity — Notification Service
 Creates notifications for users and admins.
 Called from routers when actions happen (deposit, KYC, trade, etc.)
 """

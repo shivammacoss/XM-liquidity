@@ -1,66 +1,242 @@
-import { useState, useEffect } from 'react'
+/**
+ * Admin Charges — single global config for the liquidity account.
+ *
+ * One row applies to every broker, every instrument:
+ *   - Spread markup (pips)
+ *   - Commission per standard lot (USD)
+ *   - Swap long  (USD per lot per night)
+ *   - Swap short (USD per lot per night)
+ *
+ * Stored as a DEFAULT-level ChargeSettings record with no instrument_id
+ * and no segment, so charge_calculator.get_charges() falls through to it
+ * for every trade unless a more specific row exists (none, by design).
+ */
+
+import { useEffect, useState } from 'react'
 import { adminApi } from '../services/admin'
 
+const fmt = (n, d = 2) =>
+  Number(n ?? 0).toLocaleString('en-US', {
+    minimumFractionDigits: d,
+    maximumFractionDigits: d,
+  })
+
 export default function AdminCharges() {
-  const [charges, setCharges] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showAdd, setShowAdd] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
-  const [form, setForm] = useState({ level: 'default', target_id: '', instrument_id: '', spread_markup: 0, swap_long: 0, swap_short: 0, commission_per_lot: 0 })
+  const [error, setError] = useState('')
+  const [config, setConfig] = useState({
+    spread_markup: 0,
+    commission_per_lot: 0,
+    swap_long: 0,
+    swap_short: 0,
+  })
+  const [legacyCount, setLegacyCount] = useState(0)
 
-  useEffect(() => { loadCharges() }, [])
-  const loadCharges = async () => { try { const { data } = await adminApi.charges(); setCharges(data) } catch { /* empty */ } finally { setLoading(false) } }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const loadConfig = async () => {
     try {
-      await adminApi.setCharge({ ...form, target_id: form.target_id || undefined, instrument_id: form.instrument_id || undefined })
-      setMessage('Charge saved'); setShowAdd(false); loadCharges()
-    } catch (err) { setMessage(err.response?.data?.detail || 'Failed') }
+      const { data } = await adminApi.charges()
+      const list = Array.isArray(data) ? data : []
+      // Look for the single default-level, all-instruments row.
+      const globalRow =
+        list.find(
+          (c) =>
+            c.level === 'default' &&
+            !c.instrument_id &&
+            !c.segment &&
+            !c.target_id
+        ) || null
+      if (globalRow) {
+        setConfig({
+          spread_markup: globalRow.spread_markup,
+          commission_per_lot: globalRow.commission_per_lot,
+          swap_long: globalRow.swap_long,
+          swap_short: globalRow.swap_short,
+        })
+      }
+      // Count anything else as "legacy" — a hint that there's leftover
+      // per-account-type charges from the previous model.
+      setLegacyCount(list.length - (globalRow ? 1 : 0))
+    } catch (e) {
+      setError(e?.response?.data?.detail || 'Failed to load charges')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { loadConfig() }, [])
+
+  const handleSave = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setMessage('')
+    setError('')
+    try {
+      await adminApi.setCharge({
+        level: 'default',
+        spread_markup: Number(config.spread_markup) || 0,
+        commission_per_lot: Number(config.commission_per_lot) || 0,
+        swap_long: Number(config.swap_long) || 0,
+        swap_short: Number(config.swap_short) || 0,
+      })
+      setMessage('Liquidity-account charges saved.')
+      loadConfig()
+    } catch (e) {
+      setError(e?.response?.data?.detail || 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
     <div className="dash-page">
       <div className="dash-page__header">
-        <div><h2 className="dash-page__title">CHARGE MANAGEMENT</h2><p className="dash-page__subtitle">Priority: User {'>'} Account Type {'>'} Default</p></div>
-        <button className="laser-btn laser-btn--sm" onClick={() => setShowAdd(!showAdd)}>{showAdd ? 'CANCEL' : '+ SET CHARGE'}</button>
+        <div>
+          <h2 className="dash-page__title">LIQUIDITY ACCOUNT CHARGES</h2>
+          <p className="dash-page__subtitle">
+            Single global config applied to every broker on every instrument.
+          </p>
+        </div>
       </div>
+
       {message && <div className="dash-success">{message}</div>}
-      {showAdd && (
-        <div className="dash-create-card">
-          <form onSubmit={handleSubmit} className="auth-form" style={{ maxWidth: 600 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div className="auth-form__group"><label className="auth-form__label">LEVEL</label>
-                <select className="auth-form__input" value={form.level} onChange={(e) => setForm({...form, level: e.target.value})}>
-                  <option value="default">DEFAULT (all)</option><option value="account_type">ACCOUNT TYPE</option><option value="user">USER SPECIFIC</option>
-                </select>
+      {error && <div className="auth-form__error">{error}</div>}
+
+      {loading ? (
+        <div className="dash-loading">Loading charge config…</div>
+      ) : (
+        <>
+          {/* Live snapshot */}
+          <div
+            className="dash-create-card"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 18 }}
+          >
+            <Stat label="SPREAD MARKUP" value={`${fmt(config.spread_markup, 2)} pips`} />
+            <Stat label="COMMISSION / LOT" value={`$${fmt(config.commission_per_lot, 2)}`} />
+            <Stat label="SWAP LONG" value={`$${fmt(config.swap_long, 2)} /lot/night`} />
+            <Stat label="SWAP SHORT" value={`$${fmt(config.swap_short, 2)} /lot/night`} />
+          </div>
+
+          {/* Editor */}
+          <div className="dash-create-card">
+            <h3 className="dash-create-card__title">EDIT CHARGES</h3>
+            <form onSubmit={handleSave} className="auth-form" style={{ maxWidth: 720 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <Field
+                  label="SPREAD MARKUP (PIPS)"
+                  value={config.spread_markup}
+                  onChange={(v) => setConfig({ ...config, spread_markup: v })}
+                  step="0.01"
+                  hint="Added to the raw market spread on every fill. 1 pip = 0.0001 for forex."
+                />
+                <Field
+                  label="COMMISSION / STANDARD LOT ($)"
+                  value={config.commission_per_lot}
+                  onChange={(v) => setConfig({ ...config, commission_per_lot: v })}
+                  step="0.1"
+                  hint="Charged per side, per lot. Standard lot = 100,000 base units (forex)."
+                />
+                <Field
+                  label="SWAP LONG ($ / LOT / NIGHT)"
+                  value={config.swap_long}
+                  onChange={(v) => setConfig({ ...config, swap_long: v })}
+                  step="0.01"
+                  hint="Charged at rollover for positions held long overnight. Use a negative number to debit the broker."
+                />
+                <Field
+                  label="SWAP SHORT ($ / LOT / NIGHT)"
+                  value={config.swap_short}
+                  onChange={(v) => setConfig({ ...config, swap_short: v })}
+                  step="0.01"
+                  hint="Charged at rollover for positions held short overnight."
+                />
               </div>
-              <div className="auth-form__group"><label className="auth-form__label">TARGET ID</label><input className="auth-form__input" value={form.target_id} onChange={(e) => setForm({...form, target_id: e.target.value})} placeholder="ecn / user_id" /></div>
-              <div className="auth-form__group"><label className="auth-form__label">INSTRUMENT</label><input className="auth-form__input" value={form.instrument_id} onChange={(e) => setForm({...form, instrument_id: e.target.value})} placeholder="EURUSD (empty=all)" /></div>
-              <div className="auth-form__group"><label className="auth-form__label">SPREAD MARKUP (PIPS)</label><input type="number" className="auth-form__input" value={form.spread_markup} onChange={(e) => setForm({...form, spread_markup: parseFloat(e.target.value)})} step="0.01" /></div>
-              <div className="auth-form__group"><label className="auth-form__label">SWAP LONG</label><input type="number" className="auth-form__input" value={form.swap_long} onChange={(e) => setForm({...form, swap_long: parseFloat(e.target.value)})} step="0.01" /></div>
-              <div className="auth-form__group"><label className="auth-form__label">SWAP SHORT</label><input type="number" className="auth-form__input" value={form.swap_short} onChange={(e) => setForm({...form, swap_short: parseFloat(e.target.value)})} step="0.01" /></div>
-              <div className="auth-form__group"><label className="auth-form__label">COMMISSION/LOT</label><input type="number" className="auth-form__input" value={form.commission_per_lot} onChange={(e) => setForm({...form, commission_per_lot: parseFloat(e.target.value)})} step="0.1" /></div>
+              <button
+                type="submit"
+                className="laser-btn"
+                style={{ marginTop: 18 }}
+                disabled={saving}
+              >
+                {saving ? 'SAVING…' : 'SAVE CHARGES'}
+              </button>
+            </form>
+          </div>
+
+          {legacyCount > 0 && (
+            <div className="dash-create-card" style={{ marginTop: 16 }}>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+                <strong style={{ color: '#FFB4B4' }}>HEADS UP:</strong>{' '}
+                {legacyCount} legacy per-account-type charge row{legacyCount === 1 ? '' : 's'} still
+                exist in the database from the previous model. They take priority over this global
+                config. To enforce a single global rate, those legacy rows should be deleted.
+              </p>
             </div>
-            <button type="submit" className="laser-btn" style={{ marginTop: 12 }}>SAVE CHARGE</button>
-          </form>
-        </div>
+          )}
+        </>
       )}
-      {loading ? <div className="dash-loading">Loading...</div> : charges.length === 0 ? <div className="dash-empty"><p>No charge settings. Defaults will be used (0).</p></div> : (
-        <div className="dash-table-wrap">
-          <table className="dash-table">
-            <thead><tr><th>LEVEL</th><th>TARGET</th><th>INSTRUMENT</th><th>SPREAD</th><th>SWAP L/S</th><th>COMMISSION</th><th>PRIORITY</th></tr></thead>
-            <tbody>
-              {charges.map((c) => (
-                <tr key={c.id}>
-                  <td><span className="dash-badge">{c.level.toUpperCase()}</span></td>
-                  <td>{c.target_id || 'ALL'}</td><td>{c.instrument_id || 'ALL'}</td>
-                  <td>{c.spread_markup} pips</td><td>{c.swap_long} / {c.swap_short}</td><td>${c.commission_per_lot}</td><td>{c.priority}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    </div>
+  )
+}
+
+function Stat({ label, value }) {
+  return (
+    <div
+      style={{
+        padding: '14px 16px',
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 12,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: 'Geist Mono, monospace',
+          fontSize: 10,
+          letterSpacing: '0.16em',
+          color: 'rgba(255,255,255,0.5)',
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontFamily: 'Plus Jakarta Sans, sans-serif',
+          fontWeight: 800,
+          fontSize: '1.3rem',
+          color: '#FFFFFF',
+          letterSpacing: '-0.02em',
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  )
+}
+
+function Field({ label, value, onChange, step, hint }) {
+  return (
+    <div className="auth-form__group">
+      <label className="auth-form__label">{label}</label>
+      <input
+        type="number"
+        step={step || '0.01'}
+        className="auth-form__input"
+        value={value}
+        onChange={(e) => onChange(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+      />
+      {hint && (
+        <p
+          style={{
+            margin: '6px 0 0',
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.45)',
+            lineHeight: 1.5,
+          }}
+        >
+          {hint}
+        </p>
       )}
     </div>
   )

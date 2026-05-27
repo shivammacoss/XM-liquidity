@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Admin Panel Layout
+ * XMLiquidity — Admin Panel Layout
  * Separate sidebar for admin with all management sections.
  */
 
@@ -8,17 +8,11 @@ import { Link, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 
 const adminNavItems = [
-  { path: '/admin', label: 'DASHBOARD', icon: 'grid' },
-  { path: '/admin/users', label: 'USERS', icon: 'users' },
+  { path: '/admin/users', label: 'BROKERS', icon: 'users' },
   { path: '/admin/transactions', label: 'DEPOSITS / WITHDRAWALS', icon: 'money' },
   { path: '/admin/trades', label: 'TRADES', icon: 'chart' },
   { path: '/admin/risk', label: 'RISK', icon: 'shield' },
-  { path: '/admin/instruments', label: 'INSTRUMENTS', icon: 'list' },
   { path: '/admin/charges', label: 'CHARGES', icon: 'tag' },
-  { path: '/admin/prop', label: 'PROP SETTINGS', icon: 'trophy' },
-  { path: '/admin/copy-trading', label: 'COPY / PAMM', icon: 'copy' },
-  { path: '/admin/challenges', label: 'CHALLENGES', icon: 'fire' },
-  { path: '/admin/ib', label: 'IB SETTINGS', icon: 'network' },
   { path: '/admin/audit', label: 'AUDIT LOG', icon: 'log' },
 ]
 
@@ -53,8 +47,8 @@ export default function AdminLayout() {
       <aside className="dash__sidebar dash__sidebar--admin">
         <div className="dash__sidebar-header">
           <Link to="/admin" className="dash__logo">
-            {collapsed ? 'S' : 'SWIS'}
-            <span className="dash__logo-accent">{collapsed ? 'T' : 'TRADE'}</span>
+            {collapsed ? 'X' : 'XM'}
+            <span className="dash__logo-accent">{collapsed ? 'L' : 'LIQUIDITY'}</span>
             {!collapsed && <span className="dash__admin-badge">ADMIN</span>}
           </Link>
           <button className="dash__collapse-btn" onClick={() => setCollapsed(!collapsed)}>

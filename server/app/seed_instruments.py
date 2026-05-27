@@ -1,5 +1,5 @@
 """
-SwisTrade — Seed Instruments
+XMLiquidity — Seed Instruments
 Populates the database with default tradeable instruments.
 Run once on first setup, or call from startup.
 """

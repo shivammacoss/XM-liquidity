@@ -1,5 +1,5 @@
 """
-SwisTrade — Application Configuration
+XMLiquidity — Application Configuration
 Loads all settings from environment variables. Never hardcode secrets.
 """
 
@@ -10,7 +10,7 @@ from typing import List
 
 class Settings(BaseSettings):
     # --- App ---
-    app_name: str = "SwisTrade"
+    app_name: str = "XMLiquidity"
     app_env: str = "development"
     debug: bool = True
     api_version: str = "v1"

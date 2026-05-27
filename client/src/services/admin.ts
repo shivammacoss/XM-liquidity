@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Admin API Service
+ * XMLiquidity — Admin API Service
  */
 
 import api from './api';

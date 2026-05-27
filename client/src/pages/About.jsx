@@ -1,33 +1,27 @@
 import ScrollReveal from '../components/ScrollReveal'
 
 const values = [
-  { title: 'TRADER-FIRST', desc: 'Every decision we make starts with what\'s best for our traders.' },
-  { title: 'INNOVATION', desc: 'Continuously pushing boundaries with cutting-edge technology.' },
-  { title: 'TRUST', desc: 'Building long-term relationships through transparency and reliability.' },
-  { title: 'GLOBAL ACCESS', desc: 'Making institutional-grade trading available to everyone, everywhere.' },
+  { title: 'BROKER-FIRST', desc: 'Every decision starts with what helps brokers grow — execution quality, transparency, and cost.' },
+  { title: 'NO HIDDEN COST', desc: 'No bridging fees. No fixed monthly minimums. Brokers only pay the spread and per-lot fee.' },
+  { title: 'TRANSPARENCY', desc: 'Pure A-Book routing. Every fill, spread, and timestamp auditable from the broker dashboard.' },
+  { title: 'GLOBAL ACCESS', desc: 'Multi-region execution and 24/7 support so brokers in any time zone get equal speed.' },
 ]
 
 const numbers = [
-  { value: '150+', label: 'COUNTRIES SERVED' },
-  { value: '50K+', label: 'ACTIVE TRADERS' },
-  { value: '$500M+', label: 'DAILY VOLUME' },
-  { value: '99.9%', label: 'UPTIME' },
-]
-
-const team = [
-  { initials: 'AC', name: 'ALEX CHEN', role: 'CEO & CO-FOUNDER', desc: 'Former Goldman Sachs trader with 15+ years in institutional trading.' },
-  { initials: 'SJ', name: 'SARAH JOHNSON', role: 'CTO & CO-FOUNDER', desc: 'Tech lead at Bloomberg, expert in low-latency trading systems.' },
-  { initials: 'MR', name: 'MICHAEL ROBERTS', role: 'HEAD OF COMPLIANCE', desc: 'Former SEC regulator, ensures full regulatory compliance globally.' },
+  { value: '99.99%', label: 'UPTIME SLA' },
+  { value: '<10MS', label: 'AVG LATENCY' },
+  { value: '1M+', label: 'TRADES PROCESSED' },
+  { value: '24/7', label: 'BROKER SUPPORT' },
 ]
 
 export default function About() {
   return (
     <>
       <section className="page-hero">
-        <span className="mono-label">ABOUT SWISTRADE</span>
-        <h1 className="section-title">REVOLUTIONIZING GLOBAL TRADING</h1>
+        <span className="mono-label">ABOUT XMLIQUIDITY</span>
+        <h1 className="section-title">LIQUIDITY INFRASTRUCTURE FOR MODERN BROKERS</h1>
         <p className="section-subtitle">
-          We're on a mission to democratize trading by providing everyone with institutional-grade tools, transparent pricing, and complete financial freedom.
+          XMLiquidity gives brokers direct access to tier-1 liquidity with transparent pricing, ultra-low latency, and zero bridging cost.
         </p>
       </section>
 
@@ -35,20 +29,20 @@ export default function About() {
         <div className="about-story__content">
           <h2 className="section-title" style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: 32 }}>OUR STORY</h2>
           <p>
-            SwisTrade was founded with a simple belief: trading should be accessible, transparent, and fair for everyone. We saw traders struggling with high fees, slow withdrawals, and limited access to global markets. We decided to change that.
+            XMLiquidity was built to solve a simple problem: brokers were paying too much for liquidity, too much for bridges, and getting too little transparency on how their flow was being handled.
           </p>
           <p>
-            Today, SwisTrade serves thousands of traders across 150+ countries, providing them with the tools and freedom they deserve. We're not just a broker&mdash;we're a movement toward financial independence.
+            We started with a pure A-Book model, direct connectivity to deep liquidity, and a transparent per-lot fee. No internal dealing desk. No conflict of interest. No fixed monthly minimums forcing small brokers out of the market.
           </p>
           <p>
-            Our commitment is simple: provide the best trading experience with zero compromises on security, speed, or transparency.
+            Today XMLiquidity powers Forex brokers, crypto exchanges, prop firms, CFD platforms, and white-label brokerages across the globe — from startup brokerages writing their first trades to enterprise platforms processing millions of orders per month.
           </p>
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 80 }}>
-          <span className="mono-label">OUR VISION</span>
+          <span className="mono-label">OUR SLOGAN</span>
           <h2 className="section-title" style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)', marginTop: 16 }}>
-            TO BECOME THE WORLD'S MOST TRUSTED TRADING PLATFORM BY PUTTING TRADERS FIRST.
+            DIRECT LIQUIDITY FOR BROKERS. NO FIXED COST, NO BRIDGING COST.
           </h2>
         </div>
 
@@ -69,28 +63,6 @@ export default function About() {
               <div className="number-item">
                 <div className="number-item__value">{n.value}</div>
                 <div className="number-item__label">{n.label}</div>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
-
-      <section className="team-section">
-        <div style={{ textAlign: 'center' }}>
-          <span className="mono-label">OUR PEOPLE</span>
-          <h2 className="section-title" style={{ marginTop: 16 }}>LEADERSHIP TEAM</h2>
-          <p className="section-subtitle" style={{ margin: '16px auto 0' }}>
-            Led by industry veterans from top financial institutions and technology companies.
-          </p>
-        </div>
-        <div className="team-grid">
-          {team.map((t) => (
-            <ScrollReveal key={t.name}>
-              <div className="team-card">
-                <div className="team-card__avatar">{t.initials}</div>
-                <h3 className="team-card__name">{t.name}</h3>
-                <div className="team-card__role">{t.role}</div>
-                <p className="team-card__desc">{t.desc}</p>
               </div>
             </ScrollReveal>
           ))}

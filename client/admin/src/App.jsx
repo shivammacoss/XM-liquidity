@@ -1,13 +1,15 @@
 /**
- * SwisTrade Admin — Separate App
- * Runs on admin.swistrade.com (port 5174 locally)
+ * XMLiquidity Admin — Separate App
+ * Runs on admin.xmliquidity.com (port 5174 locally)
  * Has its own login page — only admin/sub-admin can access.
  */
 
 import { BrowserRouter, Routes, Route, useLocation, Navigate, Link, Outlet, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { useAuth } from './hooks/useAuth'
+import { restoreTokens } from './services/api'
+import { fetchCurrentUser } from './store/authSlice'
 
 // Admin Pages
 import AdminDashboard from './pages/AdminDashboard'
@@ -22,6 +24,7 @@ import AdminCopyTrading from './pages/AdminCopyTrading'
 import AdminChallenges from './pages/AdminChallenges'
 import AdminIB from './pages/AdminIB'
 import AdminAudit from './pages/AdminAudit'
+import AdminPaymentSettings from './pages/AdminPaymentSettings'
 import AdminNotificationBell from './components/AdminNotificationBell'
 
 // --- Admin Login Page ---
@@ -62,7 +65,7 @@ function AdminLogin() {
     <div className="admin-login">
       <div className="admin-login__card">
         <div className="admin-login__logo">
-          SWIS<span className="admin-login__logo-accent">TRADE</span>
+          XM<span className="admin-login__logo-accent">LIQUIDITY</span>
           <span className="admin-login__badge">ADMIN</span>
         </div>
         <h1 className="admin-login__title">ADMIN PANEL</h1>
@@ -73,7 +76,7 @@ function AdminLogin() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-form__group">
             <label className="auth-form__label">EMAIL</label>
-            <input name="email" type="email" className="auth-form__input" placeholder="admin@swistrade.com" required autoComplete="email" />
+            <input name="email" type="email" className="auth-form__input" placeholder="admin@xmliquidity.com" required autoComplete="email" />
           </div>
           <div className="auth-form__group">
             <label className="auth-form__label">PASSWORD</label>
@@ -126,17 +129,12 @@ const icons = {
 }
 
 const navItems = [
-  { path: '/', label: 'DASHBOARD', icon: 'dashboard' },
-  { path: '/users', label: 'USERS', icon: 'users' },
+  { path: '/users', label: 'BROKERS', icon: 'users' },
   { path: '/transactions', label: 'DEPOSITS / WITHDRAWALS', icon: 'transactions' },
   { path: '/trades', label: 'TRADES', icon: 'trades' },
   { path: '/risk', label: 'RISK', icon: 'risk' },
-  { path: '/instruments', label: 'INSTRUMENTS', icon: 'instruments' },
   { path: '/charges', label: 'CHARGES', icon: 'charges' },
-  { path: '/prop', label: 'PROP SETTINGS', icon: 'prop' },
-  { path: '/copy-trading', label: 'COPY / PAMM', icon: 'copy' },
-  { path: '/challenges', label: 'CHALLENGES', icon: 'challenges' },
-  { path: '/ib', label: 'IB SETTINGS', icon: 'ib' },
+  { path: '/payment-settings', label: 'PAYMENT ADDRESSES', icon: 'transactions' },
   { path: '/audit', label: 'AUDIT LOG', icon: 'audit' },
 ]
 
@@ -158,7 +156,7 @@ function AdminLayout() {
             {collapsed ? (
               <img src="/favicon.svg" alt="ST" width="28" height="28" style={{ borderRadius: 6 }} />
             ) : (
-              <>SWIS<span className="dash__logo-accent">TRADE</span><span className="dash__admin-badge">ADMIN</span></>
+              <>XM<span className="dash__logo-accent">LIQUIDITY</span><span className="dash__admin-badge">ADMIN</span></>
             )}
           </span>
           <button className="dash__collapse-btn" onClick={() => setCollapsed(!collapsed)}>
@@ -215,11 +213,40 @@ function ScrollToTop() {
   return null
 }
 
+// On mount, rehydrate the session from sessionStorage so a page refresh
+// doesn't bounce the admin back to /login.
+function SessionRestore({ children }) {
+  const dispatch = useDispatch()
+  const { isAuthenticated } = useSelector((state) => state.auth)
+  const [checked, setChecked] = useState(false)
+
+  useEffect(() => {
+    if (isAuthenticated) { setChecked(true); return }
+    const { access } = restoreTokens()
+    if (access) {
+      dispatch(fetchCurrentUser()).finally(() => setChecked(true))
+    } else {
+      setChecked(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (!checked) {
+    return (
+      <div className="auth-loading">
+        <div className="auth-loading__spinner" />
+      </div>
+    )
+  }
+  return children
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <div className="noise-overlay" />
       <ScrollToTop />
+      <SessionRestore>
       <Routes>
         <Route path="/login" element={<AdminLogin />} />
         <Route element={
@@ -227,7 +254,7 @@ export default function App() {
             <AdminLayout />
           </AdminProtected>
         }>
-          <Route path="/" element={<AdminDashboard />} />
+          <Route path="/" element={<Navigate to="/users" replace />} />
           <Route path="/users" element={<AdminUsers />} />
           <Route path="/transactions" element={<AdminTransactions />} />
           <Route path="/trades" element={<AdminTrades />} />
@@ -238,10 +265,12 @@ export default function App() {
           <Route path="/copy-trading" element={<AdminCopyTrading />} />
           <Route path="/challenges" element={<AdminChallenges />} />
           <Route path="/ib" element={<AdminIB />} />
+          <Route path="/payment-settings" element={<AdminPaymentSettings />} />
           <Route path="/audit" element={<AdminAudit />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </SessionRestore>
     </BrowserRouter>
   )
 }

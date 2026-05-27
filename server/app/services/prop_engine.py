@@ -1,5 +1,5 @@
 """
-SwisTrade — Prop Challenge Engine
+XMLiquidity — Prop Challenge Engine
 Real-time rule enforcement + admin force-actions + payout queue + insights.
 
 Brought to bharat_funded parity:

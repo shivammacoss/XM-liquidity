@@ -1,5 +1,5 @@
 /**
- * SwisTrade — TradingView Advanced Chart
+ * XMLiquidity — TradingView Advanced Chart
  * - Default 1-minute timeframe
  * - ~1000 historical bars
  * - Entry/SL/TP lines (ASYNC API — returns Promises)

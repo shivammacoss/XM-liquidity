@@ -1,5 +1,5 @@
 """
-SwisTrade — Charge Calculator
+XMLiquidity — Charge Calculator
 Priority-based charge system: User > Account Type > Default
 Calculates spread, swap, and commission for every trade.
 """

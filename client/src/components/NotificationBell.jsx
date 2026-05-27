@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Notification Bell Component
+ * XMLiquidity — Notification Bell Component
  * Shows unread count badge, popup with notification list.
  */
 

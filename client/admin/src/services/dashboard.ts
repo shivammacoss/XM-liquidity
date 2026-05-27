@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Dashboard API Service
+ * XMLiquidity — Dashboard API Service
  * All dashboard-related API calls.
  */
 

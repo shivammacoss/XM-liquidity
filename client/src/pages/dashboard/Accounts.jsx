@@ -1,198 +1,313 @@
 /**
- * SwisTrade — Accounts Dashboard Page
- * Create trading accounts (6 types), view balances, manage leverage.
+ * XMLiquidity — Broker Liquidity Account (single-account, single-balance model)
+ *
+ *  - One liquidity account per broker
+ *  - One balance (no separate wallet/internal transfer)
+ *  - Locked capital is the protected baseline (set at provisioning)
+ *  - If equity drops below 80% of locked capital → trades are blocked
+ *    and the broker is prompted to refund the account.
  */
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { accountsApi } from '../../services/dashboard'
+import { useSelector } from 'react-redux'
+import { accountsApi, walletApi } from '../../services/dashboard'
 
-const ACCOUNT_TYPES = [
-  { value: 'ecn', label: 'ECN', desc: 'Ultra-tight spreads, direct market access' },
-  { value: 'standard', label: 'STANDARD', desc: 'Best for beginners, balanced conditions' },
-  { value: 'raw', label: 'RAW', desc: 'Zero markup, commission-based' },
-  { value: 'elite', label: 'ELITE', desc: 'Premium features, lowest charges (KYC required)' },
-  { value: 'islamic', label: 'ISLAMIC', desc: 'Swap-free, Shariah compliant' },
-  { value: 'cent', label: 'CENT', desc: 'Micro lots, perfect for practice' },
-]
+const LOCKED_CAPITAL_FIXED = 5000        // fixed $5,000 floor for every broker
+const LOCKED_CAPITAL_BUFFER = 0.80       // trades stop below 80% of locked capital
+
+const fmtUSD = (n) =>
+  Number(n ?? 0).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 
 export default function Accounts() {
-  const [accounts, setAccounts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showCreate, setShowCreate] = useState(false)
-  const [createType, setCreateType] = useState('standard')
-  const [createLeverage, setCreateLeverage] = useState(100)
-  const [creating, setCreating] = useState(false)
-  const [error, setError] = useState('')
   const navigate = useNavigate()
+  const user = useSelector((s) => s.auth.user)
+  const brokerName = user?.name || 'Broker'
 
-  useEffect(() => { loadAccounts() }, [])
+  const [account, setAccount] = useState(null)
+  const [wallet, setWallet] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [locking, setLocking] = useState(false)
+  const [lockMessage, setLockMessage] = useState('')
 
-  const loadAccounts = async () => {
+  const loadAll = async () => {
     try {
-      const { data } = await accountsApi.list()
-      setAccounts(data.accounts)
-    } catch { /* empty */ } finally { setLoading(false) }
+      const [accRes, walletRes] = await Promise.all([
+        accountsApi.list().catch(() => ({ data: { accounts: [] } })),
+        walletApi.get().catch(() => ({ data: null })),
+      ])
+      const nonProp = (accRes.data.accounts || []).filter((a) => !a.is_prop_account)
+      setAccount(nonProp[0] || null)
+      setWallet(walletRes.data)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleCreate = async (e) => {
-    e.preventDefault()
-    setCreating(true)
-    setError('')
+  useEffect(() => { loadAll() }, [])
+
+  const lockedCapital = LOCKED_CAPITAL_FIXED
+  const equity = account?.equity ?? 0
+  const balance = account?.balance ?? 0
+  const walletBalance = wallet?.balance ?? 0
+  const threshold = lockedCapital * LOCKED_CAPITAL_BUFFER
+  const fullyLocked = balance >= lockedCapital
+  const lockShortfall = Math.max(0, lockedCapital - balance)  // still need to deposit
+  const canTopUpFromWallet = Math.min(lockShortfall, walletBalance)
+  const belowThreshold = fullyLocked && equity < threshold
+  const shortfall = Math.max(0, threshold - equity)
+  const drawdownPct = lockedCapital > 0
+    ? ((lockedCapital - equity) / lockedCapital) * 100
+    : 0
+
+  const handleLockFromWallet = async () => {
+    setLocking(true)
+    setLockMessage('')
     try {
-      await accountsApi.create({ account_type: createType, leverage: createLeverage })
-      setShowCreate(false)
-      loadAccounts()
+      const { data } = await walletApi.lockFunds()
+      setLockMessage(data?.message || 'Locked capital topped up.')
+      await loadAll()
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to create account')
-    } finally { setCreating(false) }
+      setLockMessage(err?.response?.data?.detail || 'Could not lock funds')
+    } finally {
+      setLocking(false)
+      setTimeout(() => setLockMessage(''), 4000)
+    }
   }
 
   return (
     <div className="dash-page">
-      <div className="dash-page__header">
+      {/* Header */}
+      <div className="liq-account__header">
         <div>
-          <h2 className="dash-page__title">TRADING ACCOUNTS</h2>
-          <p className="dash-page__subtitle">Create and manage your trading accounts</p>
+          <span className="mono-label">LIQUIDITY ACCOUNT</span>
+          <h2 className="liq-account__title">{brokerName.toUpperCase()}</h2>
+          <p className="liq-account__sub">
+            One account · One balance · Trades stream in from your broker via API
+          </p>
         </div>
-        <button className="laser-btn laser-btn--sm" onClick={() => setShowCreate(!showCreate)}>
-          {showCreate ? 'CANCEL' : '+ NEW ACCOUNT'}
-        </button>
+        <div className="liq-account__header-right">
+          <div
+            className={`liq-account__badge ${
+              !fullyLocked || belowThreshold ? 'liq-account__badge--warn' : ''
+            }`}
+          >
+            <span className="status-dot" />
+            {!fullyLocked ? 'LOCK PENDING' : belowThreshold ? 'TRADING PAUSED' : 'ACTIVE'}
+          </div>
+        </div>
       </div>
 
-      {showCreate && (
-        <div className="dash-create-card">
-          <h3 className="dash-create-card__title">OPEN NEW ACCOUNT</h3>
-          {error && <div className="auth-form__error">{error}</div>}
-          <form onSubmit={handleCreate} className="dash-create-form">
-            <div className="dash-create-form__types">
-              {ACCOUNT_TYPES.map((t) => (
-                <label key={t.value} className={`dash-type-option ${createType === t.value ? 'dash-type-option--active' : ''}`}>
-                  <input type="radio" name="type" value={t.value} checked={createType === t.value}
-                    onChange={(e) => setCreateType(e.target.value)} />
-                  <span className="dash-type-option__label">{t.label}</span>
-                  <span className="dash-type-option__desc">{t.desc}</span>
-                </label>
-              ))}
-            </div>
-            <div className="dash-create-form__row">
-              <div className="auth-form__group">
-                <label className="auth-form__label">LEVERAGE</label>
-                <select className="auth-form__input" value={createLeverage} onChange={(e) => setCreateLeverage(Number(e.target.value))}>
-                  {[1, 10, 50, 100, 200, 300, 500].map((l) => (
-                    <option key={l} value={l}>1:{l}</option>
-                  ))}
-                </select>
+      {loading ? (
+        <div className="dash-loading">Loading liquidity account…</div>
+      ) : !account ? (
+        <div className="liq-empty">
+          <p>
+            Your liquidity account hasn't been provisioned yet. The XMLiquidity admin
+            team will set it up shortly with your initial locked capital. Once provisioned,
+            you'll be able to connect your broker platform from here.
+          </p>
+        </div>
+      ) : (
+        <>
+          {lockMessage && <div className="dash-success">{lockMessage}</div>}
+
+          {/* Lock-pending notification — broker hasn't locked the $5,000 floor yet */}
+          {!fullyLocked && (
+            <div className="liq-alert" role="alert">
+              <div className="liq-alert__icon">$</div>
+              <div className="liq-alert__body">
+                <strong>LOCK CAPITAL PENDING — TRADE EXECUTION DISABLED</strong>
+                <p>
+                  XMLiquidity locks the first <strong>${fmtUSD(lockedCapital)}</strong> of
+                  every deposit as protected trading capital. You've locked{' '}
+                  <strong>${fmtUSD(balance)}</strong> so far — deposit{' '}
+                  <strong>${fmtUSD(lockShortfall)}</strong> more (or top up from your wallet
+                  if it has balance) to enable incoming API trades.
+                </p>
               </div>
-              <button type="submit" className="laser-btn" disabled={creating}>
-                {creating ? 'CREATING...' : 'CREATE ACCOUNT'}
+              {canTopUpFromWallet > 0 ? (
+                <button
+                  className="laser-btn laser-btn--sm"
+                  onClick={handleLockFromWallet}
+                  disabled={locking}
+                >
+                  {locking ? 'LOCKING…' : `LOCK $${fmtUSD(canTopUpFromWallet)} FROM WALLET`}
+                </button>
+              ) : (
+                <button
+                  className="laser-btn laser-btn--sm"
+                  onClick={() => navigate('/dashboard/wallet?action=deposit')}
+                >
+                  DEPOSIT
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Drawdown notification — broker IS fully locked but lost >20% */}
+          {fullyLocked && belowThreshold && (
+            <div className="liq-alert" role="alert">
+              <div className="liq-alert__icon">!</div>
+              <div className="liq-alert__body">
+                <strong>FUND YOUR ACCOUNT — TRADE EXECUTION PAUSED</strong>
+                <p>
+                  Your equity (<strong>${fmtUSD(equity)}</strong>) has dropped more than 20% below
+                  your locked capital of <strong>${fmtUSD(lockedCapital)}</strong>.
+                  Incoming API trades will be rejected until you top up at least{' '}
+                  <strong>${fmtUSD(shortfall)}</strong> to restore the minimum threshold of
+                  <strong> ${fmtUSD(threshold)}</strong>.
+                </p>
+              </div>
+              <button
+                className="laser-btn laser-btn--sm"
+                onClick={() => navigate('/dashboard/wallet?action=deposit')}
+              >
+                FUND ACCOUNT
               </button>
             </div>
-          </form>
-        </div>
-      )}
+          )}
 
-      {loading ? (
-        <div className="dash-loading">Loading accounts...</div>
-      ) : accounts.length === 0 ? (
-        <div className="dash-empty">
-          <p>No trading accounts yet. Create your first account to start trading.</p>
-        </div>
-      ) : (() => {
-        // Hide all prop accounts — they show in Prop Challenges page
-        const nonProp = accounts.filter(a => !a.is_prop_account)
-        const isBlown = (a) => a.is_funded && a.equity <= 0
+          {/* Account card */}
+          <div
+            className="liq-sub liq-sub--api"
+            style={{ marginTop: !fullyLocked || belowThreshold ? 16 : 0 }}
+          >
+            <div className="liq-sub__head">
+              <div>
+                <span className="mono-label">YOUR LIQUIDITY ACCOUNT</span>
+                <h3 className="liq-sub__title">
+                  {account.account_number} · 1:{account.leverage}
+                </h3>
+              </div>
+              <div className="liq-sub__kind liq-sub__kind--api">API FEED</div>
+            </div>
 
-        return (
-          <div className="dash-accounts-list">
-            {nonProp.length === 0 ? (
-              <div className="dash-empty"><p>No trading accounts yet. Create your first account to start trading.</p></div>
-            ) : nonProp.map((a) => {
-              const blown = isBlown(a)
-              return (
-                <div key={a.id} className={`dash-account-wide ${blown ? 'dash-account-wide--blown' : a.is_funded ? '' : 'dash-account-wide--unfunded'}`}>
-                  <div className="dash-account-wide__left">
-                    <div className="dash-account-wide__top">
-                      <span className="dash-account-card__type">{a.account_type.toUpperCase()}</span>
-                      <span className={`dash-account-card__status ${blown ? 'dash-account-card__status--blown' : a.is_funded ? 'dash-account-card__status--funded' : ''}`}>
-                        {blown ? 'BLOWN' : a.is_funded ? 'LIVE' : 'DEMO'}
-                      </span>
-                    </div>
-                    <div className="dash-account-wide__number">{a.account_number}</div>
-                    <div style={{ fontFamily: 'Geist Mono', fontSize: 9, color: blown ? '#ff5050' : 'var(--text-secondary)', letterSpacing: '0.1em', marginTop: 2 }}>
-                      {blown ? 'ACCOUNT BLOWN — TRADING DISABLED' : a.is_funded ? 'TRADING ACCOUNT' : 'UNFUNDED ACCOUNT'}
-                    </div>
-                  </div>
+            <p className="liq-sub__desc">
+              Trades arrive via authenticated webhook from your broker platform.
+              XMLiquidity executes against tier-1 liquidity and deducts the configured
+              spread, commission, and overnight swap per fill.
+            </p>
 
-                  <div className="dash-account-wide__stats">
-                    <div className="dash-account-wide__stat">
-                      <span className="dash-account-card__label">BALANCE</span>
-                      <span className="dash-account-wide__value">${a.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                    </div>
-                    <div className="dash-account-wide__stat">
-                      <span className="dash-account-card__label">EQUITY</span>
-                      <span className={`dash-account-wide__value ${blown ? 'text-red' : ''}`}>${a.equity.toFixed(2)}</span>
-                    </div>
-                    <div className="dash-account-wide__stat">
-                      <span className="dash-account-card__label">LEVERAGE</span>
-                      <span className="dash-account-wide__value">1:{a.leverage}</span>
-                    </div>
-                    <div className="dash-account-wide__stat">
-                      <span className="dash-account-card__label">P&L</span>
-                      <span className={`dash-account-wide__value ${a.total_pnl >= 0 ? 'text-green' : 'text-red'}`}>${a.total_pnl.toFixed(2)}</span>
-                    </div>
-                    <div className="dash-account-wide__stat">
-                      <span className="dash-account-card__label">TRADES</span>
-                      <span className="dash-account-wide__value">{a.total_trades}</span>
-                    </div>
-                    <div className="dash-account-wide__stat">
-                      <span className="dash-account-card__label">WIN RATE</span>
-                      <span className="dash-account-wide__value">{a.win_rate}%</span>
-                    </div>
-                  </div>
+            {/* Big single-balance row */}
+            <div className="liq-balance">
+              <div className="liq-balance__main">
+                <span className="liq-balance__label">CURRENT BALANCE</span>
+                <span className="liq-balance__value">${fmtUSD(balance)}</span>
+              </div>
+              <div className="liq-balance__divider" />
+              <div className="liq-balance__locked">
+                <span className="liq-balance__label">LOCKED CAPITAL</span>
+                <span className="liq-balance__locked-value">${fmtUSD(lockedCapital)}</span>
+                <span className="liq-balance__hint">
+                  {fullyLocked
+                    ? `Threshold $${fmtUSD(threshold)} (80% of locked)`
+                    : `Locked $${fmtUSD(balance)} of $${fmtUSD(lockedCapital)}`}
+                </span>
+              </div>
+              <div className={`liq-balance__drawdown ${drawdownPct > 0 ? 'liq-balance__drawdown--neg' : ''}`}>
+                <span className="liq-balance__label">DRAWDOWN</span>
+                <span className="liq-balance__value">
+                  {drawdownPct > 0 ? '-' : ''}{Math.abs(drawdownPct).toFixed(2)}%
+                </span>
+                <span className="liq-balance__hint">
+                  {drawdownPct > 20 ? 'Above limit · trades paused' : `Of locked capital (limit 20%)`}
+                </span>
+              </div>
+            </div>
 
-                  <div className="dash-account-wide__actions">
-                    {blown ? (
-                      <button className="dash-btn-sm" onClick={() => navigate(`/dashboard/account-logs?account=${a.id}`)}>
-                        VIEW LOGS
-                      </button>
-                    ) : (
-                      <>
-                        {a.is_funded ? (
-                          <button className="laser-btn laser-btn--sm" onClick={() => navigate(`/trade/${a.id}`)}>
-                            TRADE
-                          </button>
-                        ) : (
-                          <button className="laser-btn laser-btn--sm" onClick={() => navigate('/dashboard/wallet')}>
-                            FUND
-                          </button>
-                        )}
-                        <button className="dash-btn-sm" onClick={() => navigate(`/dashboard/account-logs?account=${a.id}`)}>
-                          LOGS
-                        </button>
-                        <button
-                          className="dash-btn-sm dash-btn-sm--red"
-                          onClick={async () => {
-                            if (!confirm(`Delete account ${a.account_number}? ${a.balance > 0 ? `Transfer $${a.balance.toFixed(2)} to wallet first.` : ''}`)) return
-                            try {
-                              await accountsApi.delete(a.id)
-                              loadAccounts()
-                            } catch (err) {
-                              alert(err.response?.data?.detail || 'Cannot delete account')
-                            }
-                          }}
-                        >
-                          DELETE
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+            {/* Stats grid */}
+            <div className="liq-sub__stats">
+              <div className="liq-sub__stat">
+                <span className="liq-sub__stat-label">EQUITY</span>
+                <span className="liq-sub__stat-value">${fmtUSD(equity)}</span>
+              </div>
+              <div className="liq-sub__stat">
+                <span className="liq-sub__stat-label">FREE MARGIN</span>
+                <span className="liq-sub__stat-value">${fmtUSD(account.free_margin)}</span>
+              </div>
+              <div className="liq-sub__stat">
+                <span className="liq-sub__stat-label">MARGIN USED</span>
+                <span className="liq-sub__stat-value">${fmtUSD(account.margin_used)}</span>
+              </div>
+              <div className="liq-sub__stat">
+                <span className="liq-sub__stat-label">P&amp;L</span>
+                <span
+                  className={`liq-sub__stat-value ${
+                    (account.total_pnl ?? 0) >= 0 ? 'liq-pos' : 'liq-neg'
+                  }`}
+                >
+                  {(account.total_pnl ?? 0) >= 0 ? '+' : ''}${fmtUSD(account.total_pnl)}
+                </span>
+              </div>
+              <div className="liq-sub__stat">
+                <span className="liq-sub__stat-label">OPEN TRADES</span>
+                <span className="liq-sub__stat-value">{account.open_trades ?? 0}</span>
+              </div>
+              <div className="liq-sub__stat">
+                <span className="liq-sub__stat-label">TOTAL TRADES</span>
+                <span className="liq-sub__stat-value">{account.total_trades ?? 0}</span>
+              </div>
+            </div>
+
+            <div className="liq-sub__actions">
+              <button
+                className="laser-btn laser-btn--sm"
+                onClick={() => navigate(`/dashboard/liquidity/${account.id}`)}
+              >
+                VIEW POSITIONS &amp; HISTORY
+              </button>
+              <button
+                className="laser-btn laser-btn--sm laser-btn--outline"
+                onClick={() => navigate('/dashboard/api-access')}
+              >
+                CONNECT BROKER (API DOCS)
+              </button>
+              <button
+                className="laser-btn laser-btn--sm laser-btn--outline"
+                onClick={() => navigate('/dashboard/wallet?action=deposit')}
+              >
+                DEPOSIT
+              </button>
+            </div>
           </div>
-        )
-      })()}
+
+          {/* How-it-works strip */}
+          <div className="liq-howto">
+            <div className="liq-howto__step">
+              <div className="liq-howto__num">1</div>
+              <div className="liq-howto__body">
+                <div className="liq-howto__title">DEPOSIT</div>
+                <div className="liq-howto__desc">Fund your account via crypto (BTC / ETH / USDT).</div>
+              </div>
+            </div>
+            <div className="liq-howto__step">
+              <div className="liq-howto__num">2</div>
+              <div className="liq-howto__body">
+                <div className="liq-howto__title">CONNECT</div>
+                <div className="liq-howto__desc">Connect your broker into our webhook.</div>
+              </div>
+            </div>
+            <div className="liq-howto__step">
+              <div className="liq-howto__num">3</div>
+              <div className="liq-howto__body">
+                <div className="liq-howto__title">TRADE</div>
+                <div className="liq-howto__desc">Signals stream in. We execute &amp; deduct charges.</div>
+              </div>
+            </div>
+            <div className="liq-howto__step">
+              <div className="liq-howto__num">4</div>
+              <div className="liq-howto__body">
+                <div className="liq-howto__title">PROTECT</div>
+                <div className="liq-howto__desc">20% drawdown limit on locked capital. Refund to resume.</div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 """
-SwisTrade — Accounts Router
+XMLiquidity — Accounts Router
 CRUD for trading accounts (6 types). Account opens empty, locked until funded.
 """
 

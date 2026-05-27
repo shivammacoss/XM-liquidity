@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Deploy Backend (Staging)
         run: |
-          cd ~/SwisTrade/server
+          cd ~/XMLiquidity/server
           
           # Preserve .env file
           if [ -f .env ]; then
@@ -47,7 +47,7 @@ jobs:
           pip install -r requirements.txt
           
           # Restart service
-          sudo systemctl restart swistrade-api
+          sudo systemctl restart xmliquidity-api
           
           echo "✓ Staging backend deployed!"
 
@@ -60,7 +60,7 @@ jobs:
     steps:
       - name: Deploy Backend (Production)
         run: |
-          cd ~/SwisTrade/server
+          cd ~/XMLiquidity/server
           
           # Preserve .env file
           if [ -f .env ]; then
@@ -89,7 +89,7 @@ jobs:
           pip install -r requirements.txt
           
           # Restart service
-          sudo systemctl restart swistrade-api
+          sudo systemctl restart xmliquidity-api
 
           # Health check — retry up to 60s while the FastAPI app boots
           # (MongoDB connect + Beanie init + seeders need more than 5s on a cold restart).
@@ -106,12 +106,12 @@ jobs:
 
           if [ "$HEALTH_OK" -ne 1 ]; then
             echo "✗ Health check failed after 60s. Recent service logs:"
-            sudo journalctl -u swistrade-api -n 80 --no-pager || true
+            sudo journalctl -u xmliquidity-api -n 80 --no-pager || true
 
             echo "Rolling back to $BACKUP_DIR..."
             rm -rf app
             cp -r $BACKUP_DIR app
-            sudo systemctl restart swistrade-api
+            sudo systemctl restart xmliquidity-api
             exit 1
           fi
 
@@ -129,7 +129,7 @@ jobs:
     steps:
       - name: Rollback to previous version
         run: |
-          cd ~/SwisTrade/server
+          cd ~/XMLiquidity/server
           
           # Find latest backup
           LATEST_BACKUP=$(ls -td app_backup_* 2>/dev/null | head -1)
@@ -150,6 +150,6 @@ jobs:
           cp /tmp/.env.rollback.backup .env
           
           # Restart service
-          sudo systemctl restart swistrade-api
+          sudo systemctl restart xmliquidity-api
           
           echo "✓ Rolled back to: $LATEST_BACKUP"

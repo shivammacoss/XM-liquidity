@@ -1,5 +1,5 @@
 """
-SwisTrade — KYC Document Model
+XMLiquidity — KYC Document Model
 ID + Address Proof + Selfie.
 Auto quality check → manual admin review.
 """

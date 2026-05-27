@@ -1,5 +1,5 @@
 """
-SwisTrade — Notifications Router (User Side)
+XMLiquidity — Notifications Router (User Side)
 List notifications, mark as read, get unread count.
 """
 

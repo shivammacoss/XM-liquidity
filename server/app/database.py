@@ -1,5 +1,5 @@
 """
-SwisTrade — Database Connection
+XMLiquidity — Database Connection
 Secure MongoDB connection via Motor (async) + Beanie ODM.
 Connection string is NEVER exposed to frontend or logs.
 """
@@ -28,6 +28,7 @@ from app.models.kyc import KYCDocument
 from app.models.admin import AdminAuditLog, SubAdminPermissions, AccountTypeSettings, PlatformSettings
 from app.models.notification import Notification, AdminNotification
 from app.models.banking import BankingDetail
+from app.models.platform_settings import PlatformPaymentSettings
 
 _client: AsyncIOMotorClient | None = None
 
@@ -76,6 +77,8 @@ async def init_db():
             Notification, AdminNotification,
             # Banking
             BankingDetail,
+            # Platform-wide payment settings
+            PlatformPaymentSettings,
         ],
     )
 

@@ -1,5 +1,5 @@
 """
-SwisTrade — Trade Model
+XMLiquidity — Trade Model
 Every trade placed by any user on any account.
 Supports: market, limit, stop limit, target limit orders.
 """

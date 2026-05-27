@@ -1,5 +1,5 @@
 """
-SwisTrade — Admin Models
+XMLiquidity — Admin Models
 Audit log, sub-admin permissions, account type settings, platform settings.
 """
 

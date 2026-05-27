@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Account Logs & Performance
+ * XMLiquidity — Account Logs & Performance
  * Shows: performance stats, trade history, P&L, transactions
  */
 

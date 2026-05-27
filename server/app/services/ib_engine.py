@@ -1,5 +1,5 @@
 """
-SwisTrade — IB Commission Distribution Engine
+XMLiquidity — IB Commission Distribution Engine
 Direct IB: flat commission per trade.
 Community IB: 10-level decreasing distribution.
 Sub-Broker: % of all commissions (spread + swap + trade commission).

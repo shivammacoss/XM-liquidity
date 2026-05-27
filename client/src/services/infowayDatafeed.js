@@ -1,5 +1,5 @@
 /**
- * SwisTrade — InfoWay Datafeed for TradingView Advanced Charts
+ * XMLiquidity — InfoWay Datafeed for TradingView Advanced Charts
  *
  * All REST calls go through OUR BACKEND PROXY to avoid CORS:
  *   Frontend → http://localhost:8000/api/v1/market/... → InfoWay
@@ -227,7 +227,7 @@ export function createInfowayDatafeed() {
       console.log('[Datafeed] onReady called');
       setTimeout(() => cb({
         supported_resolutions: ['1', '5', '15', '30', '60', '120', '240', 'D', 'W', 'M'],
-        exchanges: [{ value: 'SwisTrade', name: 'SwisTrade', desc: '' }],
+        exchanges: [{ value: 'XMLiquidity', name: 'XMLiquidity', desc: '' }],
         symbols_types: [
           { name: 'Forex', value: 'forex' },
           { name: 'Crypto', value: 'crypto' },
@@ -255,7 +255,7 @@ export function createInfowayDatafeed() {
         type: isC ? 'crypto' : 'forex',
         session: '24x7',
         timezone: 'Etc/UTC',
-        exchange: 'SwisTrade', listed_exchange: 'SwisTrade',
+        exchange: 'XMLiquidity', listed_exchange: 'XMLiquidity',
         minmov: 1, pricescale,
         has_intraday: true, has_daily: true, has_weekly_and_monthly: true,
         supported_resolutions: ['1', '5', '15', '30', '60', '120', '240', 'D', 'W', 'M'],

@@ -1,16 +1,39 @@
-# React + Vite
+# XMLiquidity
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Professional trading platform — white-labeled fork.
 
-Currently, two official plugins are available:
+## Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `client/` — main user-facing React + Vite app
+- `client/admin/` — admin panel (separate Vite app, runs on port 5174)
+- `server/` — FastAPI backend (`server/app`)
 
-## React Compiler
+## Local development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Client (user app)
 
-## Expanding the ESLint configuration
+```sh
+cd client
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Vite serves on http://localhost:5173 by default.
+
+### Admin panel
+
+```sh
+cd client/admin
+npm install
+npm run dev
+```
+
+Runs on http://localhost:5174.
+
+### Server (FastAPI)
+
+```sh
+cd server
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```

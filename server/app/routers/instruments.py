@@ -1,5 +1,5 @@
 """
-SwisTrade — Instruments Router
+XMLiquidity — Instruments Router
 List tradeable instruments by segment.
 """
 

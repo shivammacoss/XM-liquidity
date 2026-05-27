@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
-  <rect width="48" height="48" rx="12" fill="#050505"/>
-  <rect x="1" y="1" width="46" height="46" rx="11" stroke="#BFFF00" stroke-opacity="0.3" stroke-width="1"/>
-  <text x="8" y="33" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="20" fill="#FFFFFF" letter-spacing="-1">S</text>
-  <text x="22" y="33" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="20" fill="#BFFF00" letter-spacing="-1">T</text>
+  <rect width="48" height="48" rx="12" fill="#000000"/>
+  <rect x="1" y="1" width="46" height="46" rx="11" stroke="#FF5050" stroke-opacity="0.45" stroke-width="1"/>
+  <text x="24" y="36" font-family="Plus Jakarta Sans, Arial Black, Arial, sans-serif" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="-2">X</text>
 </svg>

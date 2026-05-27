@@ -1,5 +1,5 @@
 """
-SwisTrade — Charge Settings Model
+XMLiquidity — Charge Settings Model
 Priority-based charge system:
   User-specific > Account-type-specific > Default
 

@@ -93,7 +93,7 @@ export default function Markets() {
         <div className="final-cta__inner">
           <h2 className="section-title">READY TO TRADE WITH INSTITUTIONAL SPEED?</h2>
           <p className="section-subtitle">
-            Join thousands of traders who trust SwisTrade for lightning-fast execution, ultra-low spreads, and reliable crypto payouts.
+            Join thousands of traders who trust XMLiquidity for lightning-fast execution, ultra-low spreads, and reliable crypto payouts.
           </p>
           <div className="final-cta__actions">
             <a href="#" className="laser-btn">OPEN LIVE ACCOUNT</a>

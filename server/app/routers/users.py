@@ -1,5 +1,5 @@
 """
-SwisTrade — User Profile, KYC, Read-Only ID Router
+XMLiquidity — User Profile, KYC, Read-Only ID Router
 """
 
 import os

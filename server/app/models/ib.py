@@ -1,5 +1,5 @@
 """
-SwisTrade — IB (Introducing Broker) Models
+XMLiquidity — IB (Introducing Broker) Models
 Direct IB, IB Community (10-level MLM), Sub-Broker accounts.
 """
 

@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Redux Store
+ * XMLiquidity — Redux Store
  */
 
 import { configureStore } from '@reduxjs/toolkit';

@@ -13,7 +13,7 @@ export default function RiskDisclosure() {
         </div>
 
         <h2>1. Leverage Risk</h2>
-        <p>SwisTrade offers leverage up to 1:500 on certain instruments. Leverage amplifies both gains and losses. A small adverse price movement can result in substantial losses or even the complete loss of your deposit.</p>
+        <p>XMLiquidity offers leverage up to 1:500 on certain instruments. Leverage amplifies both gains and losses. A small adverse price movement can result in substantial losses or even the complete loss of your deposit.</p>
         <p><strong style={{ color: 'var(--text-primary)' }}>Example:</strong> With 1:100 leverage, a 1% adverse price movement results in a 100% loss of your margin.</p>
 
         <h2>2. Market Risk</h2>
@@ -37,7 +37,7 @@ export default function RiskDisclosure() {
         </ul>
 
         <h2>4. Counterparty Risk</h2>
-        <p>Your trades are executed through SwisTrade's liquidity providers. If a liquidity provider defaults or experiences financial difficulties, your funds may be at risk despite our segregated account structure.</p>
+        <p>Your trades are executed through XMLiquidity's liquidity providers. If a liquidity provider defaults or experiences financial difficulties, your funds may be at risk despite our segregated account structure.</p>
 
         <h2>5. Technology Risk</h2>
         <p>Trading platforms are subject to technical failures, including:</p>
@@ -82,7 +82,7 @@ export default function RiskDisclosure() {
         </ul>
 
         <h2>9. Negative Balance Protection</h2>
-        <p>While SwisTrade offers negative balance protection, meaning your account cannot go below zero, this protection may not apply in all circumstances, including:</p>
+        <p>While XMLiquidity offers negative balance protection, meaning your account cannot go below zero, this protection may not apply in all circumstances, including:</p>
         <ul>
           <li>Extreme market gaps and flash crashes</li>
           <li>System failures during market volatility</li>
@@ -104,12 +104,12 @@ export default function RiskDisclosure() {
         </ul>
 
         <h2>11. Acknowledgment</h2>
-        <p>By opening an account with SwisTrade, you acknowledge that you have read and understood this Risk Disclosure, and you accept all risks associated with trading on our platform. You confirm that you are trading at your own risk and that SwisTrade is not responsible for any losses incurred.</p>
+        <p>By opening an account with XMLiquidity, you acknowledge that you have read and understood this Risk Disclosure, and you accept all risks associated with trading on our platform. You confirm that you are trading at your own risk and that XMLiquidity is not responsible for any losses incurred.</p>
 
         <h2>12. Contact Information</h2>
         <div className="contact-info">
-          <p><strong style={{ color: 'var(--text-primary)' }}>SwisTrade Risk Management Team</strong></p>
-          <p>Email: risk@swistrade.com</p>
+          <p><strong style={{ color: 'var(--text-primary)' }}>XMLiquidity Risk Management Team</strong></p>
+          <p>Email: risk@xmliquidity.com</p>
           <p>Phone: +1 (908) 228-0305</p>
           <p>Address: Office 9364hn, 3 Fitzroy Place, Glasgow City Centre, UK, G3 7RH</p>
         </div>

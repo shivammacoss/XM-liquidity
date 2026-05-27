@@ -1,5 +1,5 @@
 /**
- * SwisTrade — User Prop Challenges (bharat_funded parity)
+ * XMLiquidity — User Prop Challenges (bharat_funded parity)
  * Tabs: BROWSE · MY ACCOUNTS · DETAIL
  *
  * BROWSE      — multi-tier challenge cards from /prop/challenges

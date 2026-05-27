@@ -1,5 +1,5 @@
 """
-SwisTrade — Admin Notifications + User Fund Management + Login-As-User
+XMLiquidity — Admin Notifications + User Fund Management + Login-As-User
 """
 
 from datetime import datetime, timezone

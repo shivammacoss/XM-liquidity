@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Build & Deploy Frontend (Staging)
         run: |
-          cd ~/SwisTrade/client
+          cd ~/XMLiquidity/client
           
           # Pull latest code
           git fetch origin develop
@@ -47,7 +47,7 @@ jobs:
     steps:
       - name: Build & Deploy Frontend (Production)
         run: |
-          cd ~/SwisTrade/client
+          cd ~/XMLiquidity/client
           
           # Backup current dist
           if [ -d dist ]; then

@@ -1,5 +1,5 @@
 """
-SwisTrade — Wallet Model
+XMLiquidity — Wallet Model
 Each user has one wallet. Deposits/withdrawals/transfers all go through wallet.
 """
 

@@ -1,5 +1,5 @@
 """
-SwisTrade — Bot / Algo Router
+XMLiquidity — Bot / Algo Router
 Create bots, get webhook URLs, receive TradingView alerts, signal history.
 """
 

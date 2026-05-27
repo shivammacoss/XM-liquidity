@@ -1,5 +1,5 @@
 """
-SwisTrade — Copy Trading + PAMM Models
+XMLiquidity — Copy Trading + PAMM Models
 Signal-based copy trading with auto-execute and configurable lot multiplier.
 PAMM accounts with admin-set profit share %.
 """

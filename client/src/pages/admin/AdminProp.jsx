@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Admin Prop Challenge (bharat_funded parity)
+ * XMLiquidity — Admin Prop Challenge (bharat_funded parity)
  * Tabs: Settings · Challenges · Accounts · Payouts · Dashboard
  *
  * Settings   — master toggle, display name, description, T&C

@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Toast Notification System
+ * XMLiquidity — Toast Notification System
  * iOS-style slide-in notifications. Used across the entire app.
  */
 

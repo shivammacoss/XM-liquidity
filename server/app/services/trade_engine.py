@@ -1,5 +1,5 @@
 """
-SwisTrade — Trade Execution Engine
+XMLiquidity — Trade Execution Engine
 Handles: market orders, limit/stop orders, trade close, partial close, SL/TP modification.
 Calculates margin, P&L, applies charges.
 """

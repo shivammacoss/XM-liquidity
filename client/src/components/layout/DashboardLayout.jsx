@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Dashboard Layout
+ * XMLiquidity — Dashboard Layout
  * Sidebar + Topbar wrapper for all dashboard pages.
  */
 
@@ -10,14 +10,10 @@ import NotificationBell from '../NotificationBell'
 
 const userNavItems = [
   { path: '/dashboard', label: 'DASHBOARD', icon: 'grid' },
-  { path: '/dashboard/accounts', label: 'ACCOUNTS', icon: 'wallet' },
-  { path: '/dashboard/orders', label: 'ORDERS', icon: 'list' },
+  { path: '/dashboard/accounts', label: 'LIQUIDITY ACCOUNT', icon: 'wallet' },
+  { path: '/dashboard/api-access', label: 'API / WEBHOOK', icon: 'plug' },
+  { path: '/dashboard/orders', label: 'TRADES', icon: 'list' },
   { path: '/dashboard/wallet', label: 'WALLET', icon: 'coins' },
-  { path: '/dashboard/prop', label: 'PROP CHALLENGES', icon: 'trophy' },
-  { path: '/dashboard/copy-trading', label: 'COPY TRADING', icon: 'copy' },
-  { path: '/dashboard/bots', label: 'ALGO BOTS', icon: 'bot' },
-  { path: '/dashboard/challenges', label: 'CHALLENGES', icon: 'fire' },
-  { path: '/dashboard/ib', label: 'BUSINESS', icon: 'network' },
   { path: '/dashboard/profile', label: 'PROFILE', icon: 'user' },
 ]
 
@@ -92,6 +88,11 @@ const icons = {
       <line x1="21" y1="12" x2="9" y2="12" />
     </svg>
   ),
+  plug: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M9 2v6" /><path d="M15 2v6" /><path d="M6 8h12v4a6 6 0 01-12 0V8z" /><path d="M12 18v4" />
+    </svg>
+  ),
 }
 
 const primaryMobileNav = [
@@ -102,11 +103,6 @@ const primaryMobileNav = [
 ]
 
 const moreMobileItems = [
-  { path: '/dashboard/prop', label: 'Prop Challenges', icon: 'trophy' },
-  { path: '/dashboard/copy-trading', label: 'Copy Trading', icon: 'copy' },
-  { path: '/dashboard/bots', label: 'Algo Bots', icon: 'bot' },
-  { path: '/dashboard/challenges', label: 'Challenges', icon: 'fire' },
-  { path: '/dashboard/ib', label: 'Business', icon: 'network' },
   { path: '/dashboard/profile', label: 'Profile', icon: 'user' },
 ]
 
@@ -130,7 +126,7 @@ export default function DashboardLayout() {
             {sidebarCollapsed ? (
               <img src="/favicon.svg" alt="ST" width="28" height="28" style={{ borderRadius: 6 }} />
             ) : (
-              <>SWIS<span className="dash__logo-accent">TRADE</span></>
+              <>XM<span className="dash__logo-accent">LIQUIDITY</span></>
             )}
           </Link>
           <button

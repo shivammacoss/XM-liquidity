@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Business / IB Page
+ * XMLiquidity — Business / IB Page
  * Create IB account, view dashboard, referral links, commissions.
  */
 

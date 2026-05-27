@@ -1,5 +1,5 @@
 /**
- * SwisTrade Admin — Notification Bell
+ * XMLiquidity Admin — Notification Bell
  * Uses admin notification endpoints.
  */
 

@@ -1,5 +1,5 @@
 """
-SwisTrade — Instrument Model
+XMLiquidity — Instrument Model
 All tradeable instruments (forex pairs, crypto, metals, indices, stocks).
 Admin can add/hide/configure instruments.
 """

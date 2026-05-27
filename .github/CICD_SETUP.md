@@ -1,4 +1,4 @@
-# SwisTrade CI/CD Setup Guide
+# XMLiquidity CI/CD Setup Guide
 
 ## Overview
 This project uses GitHub Actions for CI/CD with automatic deployment to staging (develop branch) and production (main branch).
@@ -14,25 +14,25 @@ Go to: **Repository Settings → Secrets and variables → Actions → New repos
 ### Frontend Secrets
 | Secret | Description | Example |
 |--------|-------------|---------|
-| `VITE_API_URL` | Backend API URL for build | `https://api.swistrade.com/api/v1` |
+| `VITE_API_URL` | Backend API URL for build | `https://api.xmliquidity.com/api/v1` |
 
 ### Staging Server Secrets
 | Secret | Description | Example |
 |--------|-------------|---------|
-| `STAGING_HOST` | Staging server IP/hostname | `staging.swistrade.com` |
-| `STAGING_USER` | SSH username | `swistrade` |
+| `STAGING_HOST` | Staging server IP/hostname | `staging.xmliquidity.com` |
+| `STAGING_USER` | SSH username | `xmliquidity` |
 | `STAGING_SSH_KEY` | Private SSH key (full content) | `-----BEGIN OPENSSH...` |
 
 ### Production Server Secrets
 | Secret | Description | Example |
 |--------|-------------|---------|
-| `PROD_HOST` | Production server IP/hostname | `swistrade.com` |
-| `PROD_USER` | SSH username | `swistrade` |
+| `PROD_HOST` | Production server IP/hostname | `xmliquidity.com` |
+| `PROD_USER` | SSH username | `xmliquidity` |
 | `PROD_SSH_KEY` | Private SSH key (full content) | `-----BEGIN OPENSSH...` |
 
 > **Note:** Paths are hardcoded in workflows:
-> - Frontend: `~/SwisTrade/client/dist`
-> - Backend: `~/SwisTrade/server`
+> - Frontend: `~/XMLiquidity/client/dist`
+> - Backend: `~/XMLiquidity/server`
 
 ## Server Setup Requirements (AlmaLinux 10)
 
@@ -42,7 +42,7 @@ Go to: **Repository Settings → Secrets and variables → Actions → New repos
 ssh-keygen -t ed25519 -C "github-actions-deploy"
 
 # Copy public key to server
-ssh-copy-id -i ~/.ssh/id_ed25519.pub swistrade@your-server
+ssh-copy-id -i ~/.ssh/id_ed25519.pub xmliquidity@your-server
 
 # Add private key content to GitHub Secrets (copy full content)
 cat ~/.ssh/id_ed25519
@@ -52,21 +52,21 @@ cat ~/.ssh/id_ed25519
 ```bash
 sudo visudo
 # Add this line at the end:
-swistrade ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart swistrade-api, /usr/bin/systemctl reload nginx
+xmliquidity ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart xmliquidity-api, /usr/bin/systemctl reload nginx
 ```
 
-### 3. Backend systemd service (`/etc/systemd/system/swistrade-api.service`)
+### 3. Backend systemd service (`/etc/systemd/system/xmliquidity-api.service`)
 ```ini
 [Unit]
-Description=SwisTrade FastAPI Backend
+Description=XMLiquidity FastAPI Backend
 After=network.target
 
 [Service]
-User=swistrade
-Group=swistrade
-WorkingDirectory=/home/swistrade/SwisTrade/server
-Environment="PATH=/home/swistrade/SwisTrade/server/venv/bin"
-ExecStart=/home/swistrade/SwisTrade/server/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+User=xmliquidity
+Group=xmliquidity
+WorkingDirectory=/home/xmliquidity/XMLiquidity/server
+Environment="PATH=/home/xmliquidity/XMLiquidity/server/venv/bin"
+ExecStart=/home/xmliquidity/XMLiquidity/server/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=5
 
@@ -76,16 +76,16 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable swistrade-api
-sudo systemctl start swistrade-api
+sudo systemctl enable xmliquidity-api
+sudo systemctl start xmliquidity-api
 ```
 
-### 4. Nginx config for frontend (`/etc/nginx/conf.d/swistrade.conf`)
+### 4. Nginx config for frontend (`/etc/nginx/conf.d/xmliquidity.conf`)
 ```nginx
 server {
     listen 80;
-    server_name swistrade.com;
-    root /home/swistrade/SwisTrade/client/dist;
+    server_name xmliquidity.com;
+    root /home/xmliquidity/XMLiquidity/client/dist;
     index index.html;
 
     location / {
@@ -109,7 +109,7 @@ sudo systemctl reload nginx
 
 ### 5. Create .env file (one-time setup)
 ```bash
-cd ~/SwisTrade/server
+cd ~/XMLiquidity/server
 cp .env.example .env
 nano .env  # Edit with production values
 ```
@@ -147,7 +147,7 @@ For backend, trigger the rollback job manually from GitHub Actions:
 
 ## Server Paths (Your Setup)
 ```
-~/SwisTrade/
+~/XMLiquidity/
 ├── client/
 │   ├── dist/           ← Frontend build output (deployed here)
 │   ├── src/

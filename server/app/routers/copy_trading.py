@@ -1,5 +1,5 @@
 """
-SwisTrade — Copy Trading + PAMM Router
+XMLiquidity — Copy Trading + PAMM Router
 Masters, subscriptions, signal history, PAMM investments.
 """
 

@@ -1,5 +1,5 @@
 """
-SwisTrade — Challenges & Competitions Router
+XMLiquidity — Challenges & Competitions Router
 Join challenges, view leaderboard, track results.
 """
 

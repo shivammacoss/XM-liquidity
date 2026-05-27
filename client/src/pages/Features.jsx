@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom'
 import ScrollReveal from '../components/ScrollReveal'
 
 const stats = [
-  { label: 'RAW SPREADS FROM', value: '0.06', unit: 'PIPS' },
-  { label: 'EXECUTION SPEED', value: '<40', unit: 'MS' },
-  { label: 'COMMISSION PER LOT', value: '$2', unit: 'FLAT' },
-  { label: 'CRYPTO WITHDRAWALS', value: '\u22641', unit: 'HOUR' },
+  { label: 'UPTIME SLA', value: '99.99', unit: '%' },
+  { label: 'AVG LATENCY', value: '<10', unit: 'MS' },
+  { label: 'TRADES PROCESSED', value: '1M+', unit: 'EXECUTED' },
+  { label: 'BROKER SUPPORT', value: '24/7', unit: 'ON CALL' },
 ]
 
 const features = [
@@ -15,8 +15,8 @@ const features = [
         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
       </svg>
     ),
-    title: 'ZERO LATENCY EXECUTION',
-    desc: 'Orders processed in under 40ms with direct market access to tier-1 liquidity providers worldwide.',
+    title: 'TRUE A-BOOK ROUTING',
+    desc: 'Every client trade routed directly to tier-1 liquidity — zero conflict of interest, zero dealer intervention.',
   },
   {
     icon: (
@@ -24,8 +24,8 @@ const features = [
         <circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
       </svg>
     ),
-    title: 'INSTANT CRYPTO FUNDING',
-    desc: 'Deposit via BTC, ETH, or USDT instantly. Withdrawals processed within 1 hour, 24/7.',
+    title: 'GLOBAL EXECUTION GRID',
+    desc: 'Distributed servers across Europe, US, and Asia keep your brokers and their clients close to the market.',
   },
   {
     icon: (
@@ -33,8 +33,8 @@ const features = [
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
       </svg>
     ),
-    title: 'MULTI-ASSET TRADING',
-    desc: 'Trade 50+ forex pairs, 20+ cryptocurrencies, XAU/USD metals, indices, and global stocks.',
+    title: 'MULTI-ASSET LIQUIDITY',
+    desc: 'Forex, Crypto, Metals, Energy, Indices, and US Stocks — one connection, one pricing logic, one settlement.',
   },
   {
     icon: (
@@ -42,8 +42,8 @@ const features = [
         <rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
       </svg>
     ),
-    title: 'CROSS-PLATFORM ACCESS',
-    desc: 'Trade on desktop, web, or mobile with full MT4/MT5 compatibility and native SwisTrade apps.',
+    title: 'REST + WEBSOCKET APIS',
+    desc: 'Trade open, close, modify, positions, history, and real-time order/trade/price streams.',
   },
   {
     icon: (
@@ -51,8 +51,8 @@ const features = [
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
     ),
-    title: 'NEGATIVE BALANCE PROTECTION',
-    desc: 'Your account is protected from going below zero. Trade with confidence and controlled risk.',
+    title: 'HMAC-SHA256 SECURITY',
+    desc: 'Every request signed. Encrypted in transit. Role-based access control for every API key.',
   },
   {
     icon: (
@@ -60,9 +60,16 @@ const features = [
         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
       </svg>
     ),
-    title: '24/7 EXPERT SUPPORT',
-    desc: 'Dedicated support team available around the clock. Reach us at +1 (908) 228-0305.',
+    title: 'DEDICATED BROKER DESK',
+    desc: 'Integration engineers and an execution desk on call 24/7 for every broker partner.',
   },
+]
+
+const pricing = [
+  { value: '$4', label: 'PER LOT (MINIMUM)' },
+  { value: '0.06', label: 'FIXED SPREAD FROM' },
+  { value: '$0', label: 'BRIDGING COST' },
+  { value: '$0', label: 'FIXED MONTHLY FEE' },
 ]
 
 export default function Features() {
@@ -70,9 +77,9 @@ export default function Features() {
     <>
       <section className="page-hero">
         <span className="mono-label">PLATFORM FEATURES</span>
-        <h1 className="section-title">WHY TRADERS CHOOSE SWISTRADE</h1>
+        <h1 className="section-title">EVERYTHING YOU NEED TO RUN A BROKERAGE</h1>
         <p className="section-subtitle">
-          Access institutional-grade trading infrastructure with the flexibility and speed your strategies demand.
+          Enterprise-grade liquidity, execution, and infrastructure designed specifically for brokers, prop firms, and white-labels.
         </p>
       </section>
 
@@ -104,15 +111,35 @@ export default function Features() {
         </div>
       </section>
 
+      <section className="why-section">
+        <div className="why-section__header">
+          <span className="mono-label">PRICING</span>
+          <h2 className="section-title">SIMPLE &amp; TRANSPARENT PRICING</h2>
+          <p className="section-subtitle">
+            Same pricing across every instrument. No bridging fee. No fixed monthly cost.
+          </p>
+        </div>
+        <div className="pricing-grid">
+          {pricing.map((p) => (
+            <ScrollReveal key={p.label}>
+              <div className="pricing-card">
+                <div className="pricing-card__value">{p.value}</div>
+                <div className="pricing-card__label">{p.label}</div>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+      </section>
+
       <section className="final-cta">
         <div className="final-cta__inner">
-          <h2 className="section-title">READY TO TRADE WITH INSTITUTIONAL SPEED?</h2>
+          <h2 className="section-title">READY TO PLUG IN?</h2>
           <p className="section-subtitle">
-            Join thousands of traders who trust SwisTrade for lightning-fast execution, ultra-low spreads, and reliable crypto payouts.
+            Direct liquidity for brokers. No fixed cost, no bridging cost — only the spread and the lot fee.
           </p>
           <div className="final-cta__actions">
-            <a href="#" className="laser-btn">OPEN LIVE ACCOUNT</a>
-            <a href="#" className="laser-btn laser-btn--outline">TRY DEMO</a>
+            <Link to="/signin" className="laser-btn">BROKER LOGIN</Link>
+            <Link to="/contact" className="laser-btn laser-btn--outline">TALK TO OUR TEAM</Link>
           </div>
         </div>
       </section>

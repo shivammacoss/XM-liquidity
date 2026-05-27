@@ -1,5 +1,5 @@
 /**
- * SwisTrade — API Service
+ * XMLiquidity — API Service
  * Centralized HTTP client. All API calls go through here.
  * Tokens stored in memory (accessToken) + secure storage (refreshToken).
  * NEVER stores tokens in localStorage for XSS protection.
@@ -28,12 +28,25 @@ let refreshTokenValue: string | null = null;
 export function setTokens(access: string, refresh: string) {
   accessToken = access;
   refreshTokenValue = refresh;
-  // Also persist refresh token to sessionStorage (tab-scoped, cleared on close)
-  // This is safer than localStorage which persists across sessions
+  // Persist both to sessionStorage (tab-scoped, cleared when tab closes)
+  // so a page refresh doesn't bounce the admin back to /login.
   try {
+    sessionStorage.setItem('_at', access);
     sessionStorage.setItem('_rt', refresh);
   } catch {
     // sessionStorage unavailable (SSR, incognito limit)
+  }
+}
+
+export function restoreTokens(): { access: string | null; refresh: string | null } {
+  try {
+    const at = sessionStorage.getItem('_at');
+    const rt = sessionStorage.getItem('_rt');
+    if (at) accessToken = at;
+    if (rt) refreshTokenValue = rt;
+    return { access: at, refresh: rt };
+  } catch {
+    return { access: null, refresh: null };
   }
 }
 
@@ -50,6 +63,7 @@ export function clearTokens() {
   accessToken = null;
   refreshTokenValue = null;
   try {
+    sessionStorage.removeItem('_at');
     sessionStorage.removeItem('_rt');
   } catch {
     // ignore

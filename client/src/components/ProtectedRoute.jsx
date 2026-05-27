@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Protected Route
+ * XMLiquidity — Protected Route
  * Redirects to /signin if not authenticated.
  * Checks auth state from Redux store (populated from server).
  */

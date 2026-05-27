@@ -29,7 +29,7 @@ export default function SignUp() {
         <div className="auth-page__form-container">
           <div className="auth-page__header">
             <Link to="/" className="auth-page__logo">
-              SWIS<span className="auth-page__logo-accent">TRADE</span>
+              XM<span className="auth-page__logo-accent">LIQUIDITY</span>
             </Link>
           </div>
 
@@ -176,7 +176,7 @@ export default function SignUp() {
             <p className="auth-page__visual-quote-text">
               &ldquo;A new chapter in trading awaits. Join 50K+ traders worldwide.&rdquo;
             </p>
-            <span className="mono-label">SWISTRADE PLATFORM</span>
+            <span className="mono-label">XMLIQUIDITY PLATFORM</span>
           </div>
           <div className="auth-page__visual-features">
             <div className="auth-page__visual-feature">

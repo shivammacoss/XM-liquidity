@@ -1,5 +1,5 @@
 """
-SwisTrade — Algo bot webhook helpers
+XMLiquidity — Algo bot webhook helpers
 Builds public webhook URLs, parses TradingView payloads, optional risk-based sizing, live price fallback.
 """
 

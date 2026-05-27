@@ -1,5 +1,5 @@
 """
-SwisTrade — Transaction Model
+XMLiquidity — Transaction Model
 Records all wallet operations: deposits, withdrawals, internal transfers, prop purchases.
 """
 

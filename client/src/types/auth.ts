@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Auth Type Definitions
+ * XMLiquidity — Auth Type Definitions
  * Matches backend Pydantic schemas exactly.
  */
 

@@ -1,6 +1,6 @@
 """
-SwisTrade — Admin Prop Challenge Router
-Brings bharat_funded admin privileges to SwisTrade:
+XMLiquidity — Admin Prop Challenge Router
+Brings bharat_funded admin privileges to XMLiquidity:
   - Per-admin master settings (challenge_mode_enabled, display, T&C)
   - Challenge catalog CRUD (multi-tier pricing)
   - Account list, force-pass, force-fail, extend-time, reset

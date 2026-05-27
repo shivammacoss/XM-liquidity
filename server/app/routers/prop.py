@@ -1,5 +1,5 @@
 """
-SwisTrade — Prop Challenges Router (User-facing)
+XMLiquidity — Prop Challenges Router (User-facing)
 Browse available challenges, purchase (multi-tier), view active props, dashboard,
 insights, withdraw profit.
 

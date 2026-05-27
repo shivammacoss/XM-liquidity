@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Admin API Service
+ * XMLiquidity — Admin API Service
  */
 
 import api from './api';
@@ -26,6 +26,18 @@ export const adminApi = {
   // Charges
   charges: () => api.get('/admin/charges'),
   setCharge: (data: Record<string, unknown>) => api.post('/admin/charges', data),
+
+  // Platform deposit-address settings (TRC20 / BEP20)
+  paymentSettings: () => api.get('/admin/payment-settings'),
+  updatePaymentSettings: (data: Record<string, unknown>) =>
+    api.put('/admin/payment-settings', data),
+  uploadPaymentQr: (network: 'trc20' | 'bep20', file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api.post(`/admin/payment-settings/upload-qr?network=${network}`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 
   // Instruments
   createInstrument: (data: Record<string, unknown>) => api.post('/admin/instruments', data),

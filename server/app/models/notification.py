@@ -1,5 +1,5 @@
 """
-SwisTrade — Notification Model
+XMLiquidity — Notification Model
 System notifications for users and admins.
 Types: deposit_approved, deposit_rejected, withdrawal_approved, kyc_approved,
        admin_message, trade_alert, prop_blown, challenge_result, etc.

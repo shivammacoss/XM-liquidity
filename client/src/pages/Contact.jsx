@@ -18,7 +18,7 @@ const contactMethods = [
       </svg>
     ),
     title: 'EMAIL',
-    value: 'support@swistrade.com',
+    value: 'support@xmliquidity.com',
     sub: 'RESPONSE WITHIN 1 HOUR',
   },
   {

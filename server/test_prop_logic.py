@@ -35,8 +35,8 @@ def check(name, ok, detail=""):
 
 async def cleanup_test_data():
     """Wipe any leftover test fixtures from a previous run."""
-    await User.find(User.email == "test_admin_prop@swistrade-test.io").delete()
-    await User.find(User.email == "test_user_prop@swistrade-test.io").delete()
+    await User.find(User.email == "test_admin_prop@xmliquidity-test.io").delete()
+    await User.find(User.email == "test_user_prop@xmliquidity-test.io").delete()
     await PropChallenge.find(PropChallenge.name == "TEST_2STEP_PRO").delete()
     # Wallets / accounts / transactions cascade by user_id, but those users are gone.
 
@@ -57,7 +57,7 @@ async def main():
     # -----------------------------------------------------------------
     print("\n[2/12] Creating fixtures (admin + user + wallet)...")
     admin = User(
-        email="test_admin_prop@swistrade-test.io",
+        email="test_admin_prop@xmliquidity-test.io",
         password_hash=hash_password("TestPass123!"),
         name="Test Admin",
         role=UserRole.SUPER_ADMIN,
@@ -65,7 +65,7 @@ async def main():
     await admin.insert()
 
     user = User(
-        email="test_user_prop@swistrade-test.io",
+        email="test_user_prop@xmliquidity-test.io",
         password_hash=hash_password("TestPass123!"),
         name="Test User",
         role=UserRole.USER,
@@ -160,7 +160,7 @@ async def main():
     # -----------------------------------------------------------------
     print("\n[6/12] Insufficient balance must reject buy...")
     poor_user = User(
-        email="poor_user@swistrade-test.io",
+        email="poor_user@xmliquidity-test.io",
         password_hash=hash_password("TestPass123!"), name="Poor", role=UserRole.USER,
     )
     await poor_user.insert()

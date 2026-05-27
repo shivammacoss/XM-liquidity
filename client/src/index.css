@@ -1,5 +1,5 @@
 /* ============================================
-   SWISTRADE — Neon Velocity Global Styles
+   XMLIQUIDITY — Neon Velocity Global Styles
    ============================================ */
 
 *, *::before, *::after {
@@ -9,13 +9,15 @@
 }
 
 :root {
-  --bg: #050505;
-  --accent: #BFFF00;
+  --bg: #000000;
+  --surface: rgba(255, 255, 255, 0.04);
+  --accent: #FFFFFF;
+  --accent-soft: rgba(255, 255, 255, 0.08);
   --text-primary: #FFFFFF;
-  --text-secondary: rgba(255, 255, 255, 0.4);
-  --border: rgba(255, 255, 255, 0.1);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --border: rgba(255, 255, 255, 0.12);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --card-bg: rgba(255, 255, 255, 0.02);
+  --card-bg: rgba(255, 255, 255, 0.04);
 }
 
 html {

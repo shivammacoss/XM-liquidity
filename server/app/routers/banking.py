@@ -1,5 +1,5 @@
 """
-SwisTrade — Banking Settings Router
+XMLiquidity — Banking Settings Router
 Users save their withdrawal banking/crypto details.
 """
 

@@ -1,5 +1,5 @@
 """
-SwisTrade — Prop Challenge Models
+XMLiquidity — Prop Challenge Models
 One-step, Two-step, Instant Fund accounts with real-time rule enforcement.
 
 Brought to feature parity with bharat_funded:

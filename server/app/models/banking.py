@@ -1,5 +1,5 @@
 """
-SwisTrade — Banking Settings Model
+XMLiquidity — Banking Settings Model
 User's saved banking/crypto withdrawal details.
 """
 

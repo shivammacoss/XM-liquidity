@@ -1,11 +1,13 @@
 /**
- * SwisTrade — Admin Transactions Page
+ * XMLiquidity — Admin Transactions Page
  * Approve/reject deposits and withdrawals. THIS IS THE CRITICAL PAGE.
  * Without approving deposits, users can't fund accounts and can't trade.
  */
 
 import { useState, useEffect } from 'react'
 import { adminApi } from '../services/admin'
+
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1').replace(/\/api\/v1\/?$/, '')
 
 export default function AdminTransactions() {
   const [transactions, setTransactions] = useState([])
@@ -75,18 +77,33 @@ export default function AdminTransactions() {
           <table className="dash-table">
             <thead>
               <tr>
-                <th>USER ID</th><th>TYPE</th><th>METHOD</th><th>AMOUNT</th><th>TXN HASH</th><th>MEMO</th><th>STATUS</th><th>DATE</th><th>ACTIONS</th>
+                <th>USER ID</th><th>TYPE</th><th>METHOD</th><th>NETWORK</th><th>AMOUNT</th><th>TXN HASH</th><th>PROOF / DEST</th><th>STATUS</th><th>DATE</th><th>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
-              {transactions.map((t) => (
+              {transactions.map((t) => {
+                const network = t.payment_details?.network
+                const proofUrl = t.payment_details?.proof_image_url
+                const toAddress = t.payment_details?.to_address
+                return (
                 <tr key={t.id}>
                   <td style={{ fontSize: 10, fontFamily: 'monospace' }}>{t.user_id.slice(-8)}</td>
                   <td><span className="dash-badge">{t.type.toUpperCase()}</span></td>
                   <td>{t.method.replace(/_/g, ' ').toUpperCase()}</td>
+                  <td>{network ? network.toUpperCase() : '-'}</td>
                   <td><strong>${t.amount.toFixed(2)}</strong></td>
-                  <td style={{ fontSize: 10, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.crypto_txn_hash || '-'}</td>
-                  <td>{t.memo_tag || '-'}</td>
+                  <td style={{ fontSize: 10, maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.crypto_txn_hash || '-'}</td>
+                  <td style={{ maxWidth: 220 }}>
+                    {t.type === 'deposit' && proofUrl && (
+                      <a href={`${API_ORIGIN}${proofUrl}`} target="_blank" rel="noreferrer" style={{ display: 'inline-block' }}>
+                        <img src={`${API_ORIGIN}${proofUrl}`} alt="proof" style={{ height: 44, borderRadius: 6, border: '1px solid rgba(255,255,255,0.15)' }} />
+                      </a>
+                    )}
+                    {t.type === 'withdrawal' && toAddress && (
+                      <code style={{ fontSize: 10, wordBreak: 'break-all', color: 'rgba(255,255,255,0.75)' }}>{toAddress}</code>
+                    )}
+                    {!proofUrl && !toAddress && '-'}
+                  </td>
                   <td><span className={`dash-status dash-status--${t.status}`}>{t.status.toUpperCase()}</span></td>
                   <td>{new Date(t.created_at).toLocaleDateString()}</td>
                   <td>
@@ -100,7 +117,8 @@ export default function AdminTransactions() {
                     )}
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>

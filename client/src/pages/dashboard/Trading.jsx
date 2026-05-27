@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Professional Trading Terminal
+ * XMLiquidity — Professional Trading Terminal
  * Full-screen layout: TradingView chart + order panel + watchlist + positions
  * Opens from account cards via /trade/:accountId
  */
@@ -565,7 +565,7 @@ export default function Trading() {
               <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
             </svg>
           </button>
-          <span className="terminal__logo">SWIS<span style={{ color: 'var(--accent)' }}>TRADE</span></span>
+          <span className="terminal__logo">XM<span style={{ color: 'var(--accent)' }}>LIQUIDITY</span></span>
           <span className="terminal__account-badge">{account.account_number} | {account.account_type.toUpperCase()} | 1:{account.leverage}</span>
         </div>
         <div className="terminal__topbar-stats">
@@ -805,7 +805,7 @@ export default function Trading() {
                   {(positionTab === 'positions' ? openTrades : positionTab === 'pending' ? pendingOrders : closedTrades).length === 0 && (
                     <tr><td colSpan={11} style={{ textAlign: 'center', padding: 24, color: 'rgba(255,255,255,0.08)' }}>
                       <span style={{ fontFamily: 'Plus Jakarta Sans', fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em' }}>
-                        SWIS<span style={{ color: 'var(--accent)' }}>TRADE</span>
+                        XM<span style={{ color: 'var(--accent)' }}>LIQUIDITY</span>
                       </span>
                     </td></tr>
                   )}
@@ -976,7 +976,7 @@ export default function Trading() {
             <div className="terminal__close-overlay" onClick={() => setCloseMenuTradeId(null)} />
             <div className="terminal__close-menu">
               <div className="terminal__popup-header">
-                <span style={{ fontFamily: 'Plus Jakarta Sans', fontWeight: 800, fontSize: 13, flexShrink: 0, letterSpacing: '-0.02em' }}>SWIS<span style={{ color: 'var(--accent)' }}>TRADE</span></span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans', fontWeight: 800, fontSize: 13, flexShrink: 0, letterSpacing: '-0.02em' }}>XM<span style={{ color: 'var(--accent)' }}>LIQUIDITY</span></span>
                 <div className="terminal__popup-trade-info">
                   <div className="terminal__popup-details">
                     <span style={{ color: isBuy ? 'var(--accent)' : '#ff5050' }}>{trade.direction.toUpperCase()}</span>
@@ -1030,7 +1030,7 @@ export default function Trading() {
             <div className="terminal__close-overlay" onClick={() => { setPartialCloseId(null); setPartialLots('') }} />
             <div className="terminal__partial-popup">
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                <span style={{ fontFamily: 'Plus Jakarta Sans', fontWeight: 800, fontSize: 13, letterSpacing: '-0.02em' }}>SWIS<span style={{ color: 'var(--accent)' }}>TRADE</span></span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans', fontWeight: 800, fontSize: 13, letterSpacing: '-0.02em' }}>XM<span style={{ color: 'var(--accent)' }}>LIQUIDITY</span></span>
                 <div>
                   <div style={{ fontFamily: 'Plus Jakarta Sans', fontWeight: 800, fontSize: 15 }}>{trade.instrument}</div>
                   <div style={{ fontFamily: 'Geist Mono', fontSize: 10, color: 'var(--text-secondary)' }}>

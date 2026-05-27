@@ -1,5 +1,5 @@
 /**
- * SwisTrade — Profile Page
+ * XMLiquidity — Profile Page
  * Edit profile, avatar, KYC upload, change password, read-only ID.
  */
 

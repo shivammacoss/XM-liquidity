@@ -28,14 +28,8 @@ export default function Profile() {
   // Read-only form
   const [readOnlyPw, setReadOnlyPw] = useState('')
 
-  // KYC
-  const [kycStatus, setKycStatus] = useState(null)
 
-  useEffect(() => { loadKyc() }, [])
 
-  const loadKyc = async () => {
-    try { const { data } = await profileApi.kycStatus(); setKycStatus(data) } catch { /* empty */ }
-  }
 
   const handleProfile = async (e) => {
     e.preventDefault(); setLoading(true); setError(''); setMessage('')
@@ -64,14 +58,6 @@ export default function Profile() {
     finally { setLoading(false) }
   }
 
-  const handleKycUpload = async (docType, file) => {
-    setError(''); setMessage('')
-    try {
-      await profileApi.kycUpload(docType, file)
-      setMessage(`${docType} uploaded!`); loadKyc()
-    } catch (err) { setError(err.response?.data?.detail || 'Upload failed') }
-  }
-
   return (
     <div className="dash-page">
       <div className="dash-page__header">
@@ -85,7 +71,7 @@ export default function Profile() {
       {error && <div className="auth-form__error">{error}</div>}
 
       <div className="dash-tabs">
-        {['profile', 'kyc', 'password', 'readonly'].map((t) => (
+        {['profile', 'password', 'readonly'].map((t) => (
           <button key={t} className={`dash-tab ${tab === t ? 'dash-tab--active' : ''}`}
             onClick={() => { setTab(t); setError(''); setMessage('') }}>
             {t === 'readonly' ? 'READ-ONLY ID' : t.toUpperCase()}
@@ -118,30 +104,6 @@ export default function Profile() {
             </div>
             <button type="submit" className="laser-btn" disabled={loading}>{loading ? 'SAVING...' : 'SAVE PROFILE'}</button>
           </form>
-        </div>
-      )}
-
-      {tab === 'kyc' && (
-        <div className="dash-create-card">
-          <h3 className="dash-create-card__title">KYC VERIFICATION</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24 }}>
-            Upload your documents to verify your identity. Status: <strong style={{ color: 'var(--accent)' }}>
-              {kycStatus?.overall_status?.toUpperCase() || 'NOT SUBMITTED'}
-            </strong>
-          </p>
-          {['government_id', 'address_proof', 'selfie'].map((docType) => {
-            const doc = kycStatus?.documents?.find(d => d.doc_type === docType)
-            return (
-              <div key={docType} className="dash-kyc-item">
-                <div className="dash-kyc-item__info">
-                  <span className="dash-kyc-item__type">{docType.replace('_', ' ').toUpperCase()}</span>
-                  {doc && <span className={`dash-status dash-status--${doc.status}`}>{doc.status.toUpperCase()}</span>}
-                </div>
-                <input type="file" accept=".jpg,.jpeg,.png,.pdf"
-                  onChange={(e) => e.target.files?.[0] && handleKycUpload(docType, e.target.files[0])} />
-              </div>
-            )
-          })}
         </div>
       )}
 

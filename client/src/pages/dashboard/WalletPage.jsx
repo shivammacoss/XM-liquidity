@@ -140,6 +140,10 @@ function DepositTab({ onSubmitted }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (parseFloat(amount) < 5000) {
+      setError('Minimum deposit amount is $5,000')
+      return
+    }
     if (!uploadedUrl) {
       setError('Please upload a payment screenshot before submitting.')
       return
@@ -234,15 +238,15 @@ function DepositTab({ onSubmitted }) {
             transaction and submit below — admin will verify and credit your wallet.
           </p>
 
-          <label className="auth-form__label">AMOUNT (USDT)</label>
+          <label className="auth-form__label">AMOUNT (USDT) — MINIMUM $5,000</label>
           <input
             type="number"
             step="0.01"
-            min="0.01"
+            min="5000"
             required
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
+            placeholder="5000.00"
             className="auth-form__input"
           />
 

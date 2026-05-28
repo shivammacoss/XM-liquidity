@@ -1,18 +1,12 @@
-/**
- * XMLiquidity — Auth Hook
- * Convenience hook for auth state and actions.
- */
-
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import {
   loginUser,
-  registerUser,
   logoutUser,
   fetchCurrentUser,
   clearError,
 } from '../store/authSlice';
-import type { LoginRequest, RegisterRequest } from '../types/auth';
+import type { LoginRequest } from '../types/auth';
 import { useCallback } from 'react';
 
 export function useAuth() {
@@ -21,11 +15,6 @@ export function useAuth() {
 
   const login = useCallback(
     (data: LoginRequest) => dispatch(loginUser(data)),
-    [dispatch]
-  );
-
-  const register = useCallback(
-    (data: RegisterRequest) => dispatch(registerUser(data)),
     [dispatch]
   );
 
@@ -38,7 +27,6 @@ export function useAuth() {
   return {
     ...auth,
     login,
-    register,
     logout,
     fetchUser,
     clearAuthError,

@@ -52,7 +52,7 @@ class WalletResponse(BaseModel):
 
 
 class DepositRequest(BaseModel):
-    amount: float = Field(..., gt=0, le=1000000)
+    amount: float = Field(..., ge=5000, le=1000000)
     method: str = Field(..., pattern="^(crypto_btc|crypto_eth|crypto_usdt|bank_wire)$")
     network: Optional[str] = Field(None, pattern="^(trc20|bep20)$")
     crypto_txn_hash: Optional[str] = None

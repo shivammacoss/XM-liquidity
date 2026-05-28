@@ -57,14 +57,6 @@ async def create_account(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid account type")
 
-    # Check if user is KYC approved for certain account types
-    # (Elite requires KYC)
-    if acct_type == AccountType.ELITE and user.kyc_status != "approved":
-        raise HTTPException(
-            status_code=403,
-            detail="Elite account requires KYC verification",
-        )
-
     # Create the account
     account = TradingAccount(
         user_id=user.id,
@@ -96,6 +88,26 @@ async def list_accounts(
     status_filter: str = Query(None, alias="status", description="Filter by status"),
 ):
     """List all trading accounts for the authenticated user."""
+    # Auto-provision liquidity account if user has none
+    has_any = await TradingAccount.find(
+        TradingAccount.user_id == user.id,
+        TradingAccount.is_prop_account == False,
+    ).count()
+    if has_any == 0:
+        from app.models.account import generate_account_number
+        acct_number = generate_account_number()
+        while await TradingAccount.find_one(TradingAccount.account_number == acct_number):
+            acct_number = generate_account_number()
+        account = TradingAccount(
+            user_id=user.id,
+            account_type=AccountType.ECN,
+            account_number=acct_number,
+        )
+        await account.insert()
+        wallet = await Wallet.find_one(Wallet.user_id == user.id)
+        if not wallet:
+            await Wallet(user_id=user.id).insert()
+
     query = TradingAccount.find(TradingAccount.user_id == user.id)
 
     if account_type:

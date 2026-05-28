@@ -47,3 +47,7 @@ client/.vite/
 
 # Test logs
 /tmp/xml_*.log
+
+# Local data dumps (contain password hashes / PII — never commit)
+server/data_dump.json
+server/dump_data.py

@@ -64,6 +64,17 @@ export const adminApi = {
   // Risk
   netPositions: () => api.get('/admin/risk/net-positions'),
 
+  // Direct user creation
+  createUser: (data: { name: string; email: string; phone?: string; password: string }) =>
+    api.post('/admin/create-user', data),
+
+  // Signup requests
+  signupRequests: (params?: Record<string, string | number>) => api.get('/admin/signup-requests', { params }),
+  approveSignup: (id: string, password: string) =>
+    api.post(`/admin/signup-requests/${id}/approve`, { password }),
+  rejectSignup: (id: string, reason: string) =>
+    api.post(`/admin/signup-requests/${id}/reject`, { reason }),
+
   // Audit log
   auditLog: (params?: Record<string, number>) => api.get('/admin/audit-log', { params }),
 };

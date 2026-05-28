@@ -27,6 +27,209 @@ router = APIRouter(prefix="/admin", tags=["Admin Panel"])
 
 
 # ==========================================
+# SIGNUP REQUEST MANAGEMENT
+# ==========================================
+
+from app.models.signup_request import SignupRequest, SignupRequestStatus
+
+
+@router.get("/signup-requests", dependencies=[Depends(get_admin_user)])
+async def list_signup_requests(
+    status_filter: Optional[str] = Query(None, alias="status"),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+):
+    query = SignupRequest.find()
+    if status_filter:
+        query = query.find(SignupRequest.status == status_filter)
+
+    total = await query.count()
+    skip = (page - 1) * per_page
+    requests = await query.sort("-created_at").skip(skip).limit(per_page).to_list()
+
+    return {
+        "requests": [
+            {
+                "id": str(r.id),
+                "name": r.name,
+                "email": r.email,
+                "phone": r.phone,
+                "message": r.message,
+                "status": r.status.value,
+                "created_at": r.created_at.isoformat(),
+                "reviewed_at": r.reviewed_at.isoformat() if r.reviewed_at else None,
+                "rejection_reason": r.rejection_reason,
+            }
+            for r in requests
+        ],
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+    }
+
+
+class RejectSignupRequest(BaseModel):
+    reason: str = ""
+
+
+@router.post("/signup-requests/{req_id}/reject")
+async def reject_signup_request(
+    req_id: str,
+    data: RejectSignupRequest,
+    admin: User = Depends(get_admin_user),
+):
+    req = await SignupRequest.get(req_id)
+    if not req:
+        raise HTTPException(status_code=404, detail="Signup request not found")
+    if req.status != SignupRequestStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Request already processed")
+
+    req.status = SignupRequestStatus.REJECTED
+    req.rejection_reason = data.reason
+    req.reviewed_by = admin.id
+    req.reviewed_at = datetime.now(timezone.utc)
+    await req.save()
+
+    log = AdminAuditLog(
+        admin_id=admin.id,
+        action_type="reject_signup_request",
+        entity_type="signup_request",
+        entity_id=req_id,
+        changes=[{"field": "status", "old_value": "pending", "new_value": "rejected"}],
+    )
+    await log.insert()
+
+    return {"message": f"Signup request from {req.email} rejected"}
+
+
+async def _provision_user_account(user: User):
+    """Create wallet + liquidity trading account for a new user."""
+    from app.models.wallet import Wallet
+    from app.models.account import TradingAccount, AccountType, generate_account_number
+
+    wallet = await Wallet.find_one(Wallet.user_id == user.id)
+    if not wallet:
+        wallet = Wallet(user_id=user.id)
+        await wallet.insert()
+
+    existing_acct = await TradingAccount.find_one(
+        TradingAccount.user_id == user.id,
+        TradingAccount.is_prop_account == False,
+    )
+    if not existing_acct:
+        acct_number = generate_account_number()
+        while await TradingAccount.find_one(TradingAccount.account_number == acct_number):
+            acct_number = generate_account_number()
+        account = TradingAccount(
+            user_id=user.id,
+            account_type=AccountType.ECN,
+            account_number=acct_number,
+        )
+        await account.insert()
+
+
+class CreateUserDirectRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: str
+    phone: Optional[str] = None
+    password: str = Field(..., min_length=6, max_length=128)
+
+
+@router.post("/create-user", status_code=201)
+async def admin_create_user(
+    data: CreateUserDirectRequest,
+    admin: User = Depends(get_admin_user),
+):
+    existing = await User.find_one(User.email == data.email.lower())
+    if existing:
+        raise HTTPException(status_code=409, detail="A user with this email already exists")
+
+    from app.utils.security import hash_password
+    user = User(
+        email=data.email.lower().strip(),
+        password_hash=hash_password(data.password),
+        name=data.name.strip(),
+        phone=data.phone,
+    )
+    await user.insert()
+
+    await _provision_user_account(user)
+
+    log = AdminAuditLog(
+        admin_id=admin.id,
+        action_type="create_user",
+        entity_type="user",
+        entity_id=str(user.id),
+        changes=[{"field": "email", "old_value": None, "new_value": data.email}],
+    )
+    await log.insert()
+
+    return {
+        "message": f"Account created for {data.email}",
+        "user_id": str(user.id),
+        "email": data.email,
+        "password": data.password,
+    }
+
+
+class ApproveSignupRequest(BaseModel):
+    password: str = Field(..., min_length=6, max_length=128)
+
+
+@router.post("/signup-requests/{req_id}/approve")
+async def approve_signup_request(
+    req_id: str,
+    data: ApproveSignupRequest,
+    admin: User = Depends(get_admin_user),
+):
+    req = await SignupRequest.get(req_id)
+    if not req:
+        raise HTTPException(status_code=404, detail="Signup request not found")
+    if req.status != SignupRequestStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Request already processed")
+
+    existing_user = await User.find_one(User.email == req.email.lower())
+    if existing_user:
+        raise HTTPException(status_code=409, detail="A user with this email already exists")
+
+    from app.utils.security import hash_password
+    user = User(
+        email=req.email.lower().strip(),
+        password_hash=hash_password(data.password),
+        name=req.name.strip(),
+        phone=req.phone,
+    )
+    await user.insert()
+
+    await _provision_user_account(user)
+
+    req.status = SignupRequestStatus.APPROVED
+    req.reviewed_by = admin.id
+    req.reviewed_at = datetime.now(timezone.utc)
+    req.created_user_id = user.id
+    await req.save()
+
+    log = AdminAuditLog(
+        admin_id=admin.id,
+        action_type="approve_signup_request",
+        entity_type="signup_request",
+        entity_id=req_id,
+        changes=[
+            {"field": "status", "old_value": "pending", "new_value": "approved"},
+            {"field": "created_user_id", "old_value": None, "new_value": str(user.id)},
+        ],
+    )
+    await log.insert()
+
+    return {
+        "message": f"Account created for {req.email}",
+        "user_id": str(user.id),
+        "email": req.email,
+        "password": data.password,
+    }
+
+
+# ==========================================
 # DASHBOARD STATS
 # ==========================================
 

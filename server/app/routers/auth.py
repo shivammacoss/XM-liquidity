@@ -1,36 +1,37 @@
 """
-ProTrader — Auth Router
-Registration, login, token refresh, logout.
-All endpoints validate input and enforce rate limits.
+XMLiquidity — Auth Router
+Signup requests, login, token refresh, logout.
+Users cannot self-register. They submit a signup request which
+the super admin reviews. The admin creates the account and provides
+credentials to the user.
 """
 
 import hashlib
 from fastapi import APIRouter, Request, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr, Field
 
 from app.schemas.auth import (
-    RegisterRequest,
     LoginRequest,
     TokenResponse,
     RefreshRequest,
     MessageResponse,
 )
 from app.services.auth_service import (
-    register_user,
     authenticate_user,
     generate_tokens,
     create_session,
     invalidate_session,
     user_to_public,
 )
-from app.utils.security import decode_refresh_token, hash_password
+from app.utils.security import decode_refresh_token
 from app.middleware.auth import get_current_user
 from app.models.user import User
+from app.models.signup_request import SignupRequest, SignupRequestStatus
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 def _get_client_ip(request: Request) -> str:
-    """Extract real client IP, respecting reverse proxy headers."""
     forwarded = request.headers.get("X-Forwarded-For")
     if forwarded:
         return forwarded.split(",")[0].strip()
@@ -38,35 +39,50 @@ def _get_client_ip(request: Request) -> str:
 
 
 def _hash_token_for_storage(token: str) -> str:
-    """Hash refresh token before storing in DB. Never store raw tokens."""
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(data: RegisterRequest, request: Request):
-    """
-    Register a new user account.
-    - Validates all input (email, password strength, name)
-    - Hashes password with bcrypt
-    - Returns JWT tokens
-    """
-    user = await register_user(data)
+class SignupRequestBody(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    phone: str | None = Field(None, max_length=20)
+    message: str | None = Field(None, max_length=500)
 
-    tokens = generate_tokens(user)
 
-    # Track session
-    await create_session(
-        user_id=user.id,
-        refresh_token_hash=_hash_token_for_storage(tokens["refresh_token"]),
-        device_info=request.headers.get("User-Agent", ""),
-        ip_address=_get_client_ip(request),
+@router.post("/signup-request", status_code=status.HTTP_201_CREATED)
+async def submit_signup_request(data: SignupRequestBody):
+    existing_user = await User.find_one(User.email == data.email.lower())
+    if existing_user:
+        raise HTTPException(status_code=409, detail="This email is already registered")
+
+    existing_req = await SignupRequest.find_one(
+        SignupRequest.email == data.email.lower(),
+        SignupRequest.status == SignupRequestStatus.PENDING,
+    )
+    if existing_req:
+        raise HTTPException(status_code=409, detail="A signup request for this email is already pending")
+
+    req = SignupRequest(
+        name=data.name.strip(),
+        email=data.email.lower().strip(),
+        phone=data.phone,
+        message=data.message,
+    )
+    await req.insert()
+
+    from app.services.notification_service import notify_admins
+    from app.models.notification import NotificationType, NotificationPriority
+    await notify_admins(
+        type=NotificationType.SYSTEM_MESSAGE,
+        title="New Signup Request",
+        message=f"{data.name} ({data.email}) has requested an account",
+        from_user_id=None,
+        entity_type="signup_request",
+        entity_id=str(req.id),
+        priority=NotificationPriority.HIGH,
     )
 
-    return TokenResponse(
-        access_token=tokens["access_token"],
-        refresh_token=tokens["refresh_token"],
-        user=user_to_public(user),
-    )
+    return {"message": "Your signup request has been submitted. You will receive your credentials via email once approved."}
 
 
 @router.post("/login", response_model=TokenResponse)

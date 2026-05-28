@@ -29,6 +29,7 @@ from app.models.admin import AdminAuditLog, SubAdminPermissions, AccountTypeSett
 from app.models.notification import Notification, AdminNotification
 from app.models.banking import BankingDetail
 from app.models.platform_settings import PlatformPaymentSettings
+from app.models.signup_request import SignupRequest
 
 _client: AsyncIOMotorClient | None = None
 
@@ -79,6 +80,8 @@ async def init_db():
             BankingDetail,
             # Platform-wide payment settings
             PlatformPaymentSettings,
+            # Signup requests
+            SignupRequest,
         ],
     )
 
@@ -147,6 +150,11 @@ async def _ensure_indexes():
 
     # KYC indexes
     await KYCDocument.get_motor_collection().create_index("user_id", background=True)
+
+    # Signup request indexes
+    sr_col = SignupRequest.get_motor_collection()
+    await sr_col.create_index("email", background=True)
+    await sr_col.create_index("status", background=True)
 
     # Charge indexes
     await ChargeSettings.get_motor_collection().create_index(

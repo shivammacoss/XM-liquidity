@@ -149,18 +149,10 @@ export default function SignIn() {
                 </motion.button>
               </form>
 
-              <div className="signin-divider">
-                <span /> <span className="signin-divider__text">or</span> <span />
-              </div>
-
-              <button type="button" className="signin-google">
-                <span style={{ fontWeight: 700 }}>G</span> Continue with Google
-              </button>
-
               <p className="signin-footer-link">
-                New here?{' '}
+                Don't have credentials?{' '}
                 <Link to="/signup" className="signin-footer-link__a">
-                  Create an account
+                  Request an account
                 </Link>
               </p>
 

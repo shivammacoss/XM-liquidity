@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: xmliquidity-api
+    runtime: python
+    rootDir: server
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.10"
+      - key: APP_NAME
+        value: XMLiquidity
+      - key: APP_ENV
+        value: development
+      - key: DEBUG
+        value: "true"
+      - key: API_VERSION
+        value: v1
+      # Set these in the Render dashboard (mark as secret):
+      - key: MONGODB_URL
+        sync: false
+      - key: MONGODB_DB_NAME
+        value: xmliquidity
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: JWT_REFRESH_SECRET_KEY
+        sync: false
+      - key: SUPER_ADMIN_EMAIL
+        value: admin@xmliquidity.com
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
+      # Comma-separated Vercel frontend URLs (set after Vercel deploy):
+      - key: ALLOWED_ORIGINS
+        sync: false
+      # This service's own public URL (set after first deploy):
+      - key: PUBLIC_API_BASE_URL
+        sync: false
+      - key: INFOWAY_API_KEY
+        sync: false

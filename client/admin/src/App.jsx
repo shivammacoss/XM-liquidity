@@ -25,6 +25,7 @@ import AdminChallenges from './pages/AdminChallenges'
 import AdminIB from './pages/AdminIB'
 import AdminAudit from './pages/AdminAudit'
 import AdminPaymentSettings from './pages/AdminPaymentSettings'
+import AdminSignupRequests from './pages/AdminSignupRequests'
 import AdminNotificationBell from './components/AdminNotificationBell'
 
 // --- Admin Login Page ---
@@ -129,6 +130,7 @@ const icons = {
 }
 
 const navItems = [
+  { path: '/signup-requests', label: 'SIGNUP REQUESTS', icon: 'users' },
   { path: '/users', label: 'BROKERS', icon: 'users' },
   { path: '/transactions', label: 'DEPOSITS / WITHDRAWALS', icon: 'transactions' },
   { path: '/trades', label: 'TRADES', icon: 'trades' },
@@ -254,7 +256,8 @@ export default function App() {
             <AdminLayout />
           </AdminProtected>
         }>
-          <Route path="/" element={<Navigate to="/users" replace />} />
+          <Route path="/" element={<Navigate to="/signup-requests" replace />} />
+          <Route path="/signup-requests" element={<AdminSignupRequests />} />
           <Route path="/users" element={<AdminUsers />} />
           <Route path="/transactions" element={<AdminTransactions />} />
           <Route path="/trades" element={<AdminTrades />} />
